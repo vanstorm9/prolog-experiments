@@ -1,0 +1,23 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Template for a SPARC file
+%% Author: 
+%% Description:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sorts
+    #block = {a, b, c, d, t}.
+    #step = 0 .. 999.
+    #loc = #block + {t}.
+    #fluent = on(#block, #loc).
+    #action = put(#block, #loc).
+    
+predicates
+    on(#block,#block).
+    put(#block, #loc).
+    holds(#fluent, #step).
+    
+rules
+    holds(on(a,t),0).
+    holds(on(b,a),0).
+    holds(on(d,t),0).
+    
