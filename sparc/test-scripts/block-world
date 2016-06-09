@@ -1,9 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Template for a SPARC file
-%% Author: 
-%% Description:
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 sorts
     #block = {a, b, c, d, t}.
     #step = 0 .. 999.
@@ -28,6 +22,7 @@ rules
         holds(on(B,L2),I), 
         L1 != L2.
     
+    % Defining the inertia axiom (block stays in place next step if untouched)
     holds(F,I):-
         holds(F,I-1),
         not -holds(F,I).
@@ -35,6 +30,8 @@ rules
     -holds(F,I):-
         -holds(F,I-1),
         not holds(F,I).
-    
-    
         
+    % Solving the impossibility condition (cannot stack block A on block B if there is already something on block B
+    -occurs(put(B1,B2),I):-
+        holds(on(B3,B2),I).
+    
