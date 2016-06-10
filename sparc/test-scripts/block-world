@@ -21,3 +21,9 @@ rules
     holds(on(B,L),I):- occurs(put(B,L),I).
         holds(on(B3,B2),I).
     
+    % Implementing inertia axion (stays in place from previous step)
+    % Block B is at location L if Block B was at location L in the previous step and we do not have a reason to believe that block B was not at location L 
+    holds(on(B,L),I):- 
+        holds(on(B,L),I-1),  % warning, this could be a recursive definition
+        not -holds(on(B,L), I).
+        
