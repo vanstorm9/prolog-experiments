@@ -1,5 +1,5 @@
 sorts
-    #block = {a, b, c, d, t}.
+    #block = {a, b, c, d, e, f, t}.
     #step = 0 .. 999.
     #loc = #block + {t}.
     #fluent = on(#block, #loc).
@@ -15,15 +15,17 @@ rules
     holds(on(a,t),0).
     holds(on(b,a),0).
     holds(on(d,t),0).
+    holds(on(e,t),0).
+    holds(on(f,t),0).
+    
     occurs(put(d,b),1).
 
     % Block B is at location L if Block B is placed (put) at location L
     holds(on(B,L),I):- occurs(put(B,L),I).
-        holds(on(B3,B2),I).
+
     
     % Implementing inertia axion (stays in place from previous step)
     % Block B is at location L if Block B was at location L in the previous step and we do not have a reason to believe that block B was not at location L 
     holds(on(B,L),I):- 
-        holds(on(B,L),I-1),  % warning, this could be a recursive definition
-        not -holds(on(B,L), I).
-        
+        holds(on(B,L),I-1).  % warning, this could be a recursive definition
+    %    not -holds(on(B,L), I).
