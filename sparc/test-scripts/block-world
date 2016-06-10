@@ -15,23 +15,9 @@ rules
     holds(on(a,t),0).
     holds(on(b,a),0).
     holds(on(d,t),0).
+    occurs(put(d,b),1).
 
-    holds(on(B,L),I):- occurs(put(B,L),I-1).
-    
-    holds(on(B,L1),I):- 
-        holds(on(B,L2),I), 
-        L1 != L2.
-    
-    % Defining the inertia axiom (block stays in place next step if untouched)
-    holds(F,I):-
-        holds(F,I-1),
-        not -holds(F,I).
-        
-    -holds(F,I):-
-        -holds(F,I-1),
-        not holds(F,I).
-        
-    % Solving the impossibility condition (cannot stack block A on block B if there is already something on block B
-    -occurs(put(B1,B2),I):-
+    % Block B is at location L if Block B is placed (put) at location L
+    holds(on(B,L),I):- occurs(put(B,L),I).
         holds(on(B3,B2),I).
     
