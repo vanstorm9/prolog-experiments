@@ -1,5 +1,5 @@
 sorts
-    #block = {a, b, c, d, t}.
+    #block = {a, b, c, d, e, f, t}.
     #step = 0 .. 999.
     #loc = #block + {t}.
     #fluent = on(#block, #loc).
@@ -15,6 +15,10 @@ rules
     holds(on(a,t),0).
     holds(on(b,a),0).
     holds(on(d,t),0).
+    holds(on(e,t),0).
+    holds(on(f,t),0).
+
+    occurs(put(d,b),1).
 
     holds(on(B,L),I):- occurs(put(B,L),I-1).
     
