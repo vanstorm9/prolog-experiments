@@ -4,48 +4,38 @@ sorts
 	#loc = #block + {t}.
 	#fluent = on(#block, #loc).
 	#action = put(#block, #loc).
-    
+
 predicates
 	on(#block,#block).
 	put(#block, #loc).
 	holds(#fluent, #step).
 	occurs(#action, #step).
-    
+	    
 rules
 	holds(on(a,t),0).
 	holds(on(b,a),0).
+	holds(on(c,t),0).
 	holds(on(d,t),0).
 	holds(on(e,t),0).
-	holds(on(f,t),0).
+	holds(on(e,f),0).
 
-	occurs(put(d,b),1).
-
-	% Block B is at location L if Block B is placed (put) at location L
-	holds(on(B,L),I):- occurs(put(B,L),I).
+	occurs(put(d,b),0).
 
 
+	% Inertia Axiom
+	% block B is at location L at step I + 1, 
+	%	if block B is at location L at step I, 
+	%	if we do not have a reason to believe that block B is NOT at location L at step I + 1
 
+	holds(on(B,L), I+1):-	
+		holds(on(B,L), I),
+		not -holds(on(B,L), I + 1).
 
--holds(on(B,L1), I):-
-	occurs(put(B,L2), I),
-	L1 != L2.
+	% Must deal with moved blocks to work with inertia axiom
+	% block B is NOT at location L at step I + 1,
+	%	if block B is NOT at location L at step I,
+	%	if we have no reason to believe that block B is NOT at location L at I + 1
 
-
-
-
-
-	% Implementing inertia axion (stays in place from previous step)
-	% Block B is at location L if Block B was at location L in the previous step and we do not have a reason to believe that block B was not at location L
-
-	holds(on(B,L),I):- 
-		holds(on(B,L),I-1).  
-	%    not -holds(on(B,L), I).
-
-
-	% If F is not at the previous step (I-1) and we have no reason to believe that F is at location I, then F is at location I
-	%holds(F,I):-
-	%	-holds(F,I-1),
-	%	not holds(F,I).
-
-
-
+	-holds(on(B,L), I + 1):-
+		holds(on(B,L), I),
+		not -holds(on(B,L), I + 1).

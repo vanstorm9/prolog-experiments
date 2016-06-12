@@ -1,0 +1,47 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Template for a SPARC file
+%% Author: 
+%% Description:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sorts
+‪#‎numbers‬ = 1..9.
+%‪#‎cols‬ = 1..9.
+%‪#‎rows‬ = 1..9.
+predicates
+%% inARow(X, Y) denotes number X is in column Y
+%% inAColumn(X, Y) denotes number X is in a row Y
+%% coordinate(X,Y) denotes the grid at row X and column Y
+% location(N, X, Y) denotes that the number at coordinate (X, Y) is N
+location(#numbers, #numbers, #numbers).
+inSameStrip(#numbers, #numbers).
+distinctLocs(#numbers, #numbers, #numbers, #numbers).
+inRegion(#numbers, #numbers, #numbers, #numbers).
+% no two numbers in different locations of a column are the same
+rules
+% - no two numbers in different locations of a row are the same
+% - for any two location(R1, C1) and (R1, C2)
+% the numbers on them are different
+:- location(N1, R1, C1), location(N2, R1, C2), N1 = N2, C1 != C2.
+% - no two numbers in different locations of a column are the same
+% - for any two location(R1, C1) and (R2, C1)
+% the numbers on them are different
+:- location(N1, R1, C1), location(N2, R2, C1), N1 = N2, R1 != R2.
+%no two numbers in different ocations can be in the same region
+:- location(N1, R1, C1), location(N2, R2, C2), 
+inRegion(R1, C1, R2, C2), distinctLocs(R1, C1, R2, C2), N1 = N2.
+% each location has a number 
+% for each location (R, C), there is a number between (including) 1 and 9
+location(1, R, C) | location(2, R, C) | location(3, R, C) | location(4, R, C) | 
+location(5, R, C) | location(6, R, C) | location(7, R, C) | location(8, R, C) | 
+location(9, R, C).
+% inRegion(R1, C1, R2, C2) denotes locations (R1, C1) 
+% and (R2, C2) are in the same "3 by 3" square.
+
+inRegion(R1, C1, R2, C2) :- 
+inSameStrip(R1, R2),
+inSameStrip(C1, C2).
+inSameStrip(X, Y) :- X>=1, X<=3, Y >= 1, Y <= 3.
+inSameStrip(X, Y) :- X>=4, X<=6, Y >= 4, Y <= 6.
+inSameStrip(X, Y) :- X>=7, X<=9, Y >= 7, Y <= 9.
+distinctLocs(R1, C1, R2, C2) :- R1 != R2.
+distinctLocs(R1, C1, R2, C2) :- C1 != C2.
