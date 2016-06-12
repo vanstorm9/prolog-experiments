@@ -1,10 +1,10 @@
-
-
 sorts
 	#block = [b][0..7].
-	#step = 0 .. 2.
+	#step = 0 .. 4.
 	#loc = #block + {t}.
-	#fluent = on(#block, #loc).
+	#internal_fluent = on(#block, #loc).
+	#defined_fluent = above(#block, #loc).
+	#fluent = #internal_fluent + #defined_fluent.
 	#action = put(#block, #loc).
 
 predicates
@@ -22,6 +22,7 @@ rules
 	holds(on(b6,t),0). 
 
 	occurs(put(b4,b2),0).
+	%occurs(put(b3,b4),1).
 
 	% Setting the ability to move blocks
 	holds(on(B,L),I+1):- occurs(put(B,L),I).
@@ -30,17 +31,26 @@ rules
 	% To prevent the block from appearing at two places in same step
 	% block B is NOT at location L2 at step I,
 	%	if block B is at location L1 at step I,
-	%	location L1 and location L2 are NOT equal
+	%	if location L1 and location L2 are NOT equal
 
 	-holds(on(B,L2),I) :-
 		holds(on(B,L1),I),
 		L1 != L2. 
-			
 
 
+	% Setting the property of above
+
+	holds(above(B,L),I):- holds(on(B,L),I).
+
+	holds(above(B,L),I):-
+		holds(on(B,X),I),
+		holds(above(X,L),I).		
+
+	
+	-holds(above(B,L),I):- not holds(above(B,L),I).	
 
 
-	% Inertia Axiom
+	% Inertia Axiom %%
 	% block B is at location L at step I + 1, 
 	%	if block B is at location L at step I, 
 	%	if we do not have a reason to believe that block B is NOT at location L at step I + 1
@@ -48,6 +58,9 @@ rules
 	holds(on(B,L), I+1):-	
 		holds(on(B,L), I),
 		not -holds(on(B,L), I + 1).
+
+
+
 
 	% Must deal with moved blocks to work with inertia axiom
 	% block B is NOT at location L at step I + 1,
@@ -60,6 +73,21 @@ rules
 
 
 
-
-
+	%% Impossibility condition %%
 	
+	% To prevent moving a block that is occupied with another block
+	% block B is NOT placed at location L, if there exists block X on top of block B
+
+	-occurs(put(B,L),I):-
+		holds(on(X,B),I).
+		
+
+
+	% To prevent moving a block to an occupied block
+	% block B is NOT placed at location L, if there exists block X at location L
+
+	-occurs(put(B,L),I):-
+		holds(on(X,L),I).
+	
+
+
