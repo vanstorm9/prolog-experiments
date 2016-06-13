@@ -1,8 +1,8 @@
-#const n = 10.
+#const n = 50.
 
 sorts
     #step = 0 .. n.
-    #num_dose = 0 ..n.
+    #num_dose = 0 .. n.
     #person = {hanayo, umi, eli, rin, honoka, nozomi, maki, kotori, nico}.
     #vaccine = {hboc,prpomp}.
     #fluent = contains(#person, #vaccine).
@@ -11,15 +11,14 @@ sorts
 predicates
     holds(#fluent, #step).
     occurs(#action, #step).
-    dose(#vaccine, #num_dose).
+    dose_set(#vaccine, #num_dose).
     mixed_series(#person, #step).
     
+    goal(#person, #vaccine, #step).
+    
 rules
-    dose(hboc,4).
-    dose(prpomp,3).
-
-    occurs(give(hanayo,hboc),0).
-    occurs(give(hanayo,prpomp),1).
+    dose_set(hboc,4).
+    dose_set(prpomp,3).
 
     % The person contains a vaccine dose if he/she was given a vaccine dose
     % Person P contains vaccine X at step I+1,if person P is given vaccine X at step I
@@ -46,5 +45,41 @@ rules
     % Closed world assumption
     % It is not a mixed series, if we do not have a reason to believe it is a mixed series
     -mixed_series(P,I):- not mixed_series(P,I).
+    
+    -goal(P,X,I):- not goal(P,X,I).
+    
+    %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
+    
+    % We will achieve our goal,
+    %   if we recieved C does of vaccine X,
+    %   and person P contains vaccine X at step C (which means containing C doses) 
+    
+    goal(P,X,I):-
+        dose_set(X,C),
+        holds(contains(P,X),I),
+        C == I.
+
+    
+    
+    
+    
+    
+    %%%%%%%%%%% Test cases %%%%%%%%%%%
+    
+    
+    
+    % Case 1 (4 hboc)
+    occurs(give(hanayo,hboc),0).
+    occurs(give(hanayo,hboc),1).
+    occurs(give(hanayo,hboc),2).
+    occurs(give(hanayo,hboc),3).
+   
+
+    % Case 2 (3 prpomp)
+     %occurs(give(hanayo,prpomp),1).
+     %occurs(give(hanayo,prpomp),1).
+     %occurs(give(hanayo,prpomp),1).
+
+    % Case 3
 
  
