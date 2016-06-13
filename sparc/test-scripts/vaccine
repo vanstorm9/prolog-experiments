@@ -1,0 +1,35 @@
+#const n = 10.
+
+sorts
+    #step = 0 .. n.
+    #num_dose = 0 ..n.
+    #person = {hanayo, umi, eli}.
+    #vaccine = {hboc,prpomp}.
+    #fluent = contains(#person, #vaccine).
+    #action = give(#person, #vaccine).
+    
+predicates
+    holds(#fluent, #step).
+    occurs(#action, #step).
+    dose(#vaccine, #num_dose).
+    mixed_series(#person, #step).
+rules
+    dose(hboc,4).
+    dose(prpomp,3).
+
+    occurs(give(hanayo,hboc),0).
+    occurs(give(hanayo,prpomp),1).
+
+    % Person P has mixed series at step I,
+    %   if person P contains vaccine A at step I,  
+    %   if person P contains vaccine B at step I,
+    %   A does NOT equal to B
+    
+    mixed_series(P,I):-
+        holds(contains(P,A),I),
+        holds(contains(P,B),I),
+        A != B.
+        
+        
+
+ 
