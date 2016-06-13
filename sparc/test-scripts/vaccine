@@ -23,10 +23,12 @@ rules
 
     % The person contains a vaccine dose if he/she was given a vaccine dose
     % Person P contains vaccine X at step I+1,if person P is given vaccine X at step I
+    
     holds(contains(P,X),I+1):- occurs(give(P,X),I).
 
     % Inertia axiom
     % Person P contains vaccine X at step I+1, if person P was given vaccine X at step I 
+    
     holds(contains(P,X),I+1):- holds(contains(P,X),I).
     
 
@@ -40,6 +42,9 @@ rules
         holds(contains(P,B),I),
         A != B.
         
-        
+    
+    % Closed world assumption
+    % It is not a mixed series, if we do not have a reason to believe it is a mixed series
+    -mixed_series(P,I):- not mixed_series(P,I).
 
  
