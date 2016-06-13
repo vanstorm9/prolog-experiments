@@ -1,3 +1,24 @@
+% Situation
+%=== The following is an except from a CPG and a local customization of the CPG ===
+
+% A general CPG (Clinical Practice Guideline) states
+
+% "There are two different brands of Hib vaccine, HbOC and PRPOMP. The guideline recommends that a child should receive all of one brand or all of the other. It takes four doses to complete the series using HbOC and three doses using PRPOMP.
+
+% If a child has already received both brands (a “mixed series”), then all doses are treated as if they were HbOC and the four-dose schedule is used."
+
+% A local customization of the CPG allows a special schedule using PRPOMP for dose 1 and HbOC for doses 2–4.
+
+% ======
+
+
+
+
+% Problems:
+%   - Inefficent scaling
+%      - n vaccines will cause number of goal states to increase by n
+%   - Program  is too simple as situation description is vauge (no test case in which it does not work)
+
 #const n = 50.
 
 sorts
@@ -14,7 +35,8 @@ predicates
     dose_set(#vaccine, #num_dose).
     mixed_series(#person, #step).
     
-    goal(#person, #vaccine, #step).
+    goal(#person, #step).
+    success(#person, #step).
     
 rules
     dose_set(hboc,4).
@@ -46,7 +68,7 @@ rules
     % It is not a mixed series, if we do not have a reason to believe it is a mixed series
     -mixed_series(P,I):- not mixed_series(P,I).
     
-    -goal(P,X,I):- not goal(P,X,I).
+    -goal(P,I):- not goal(P,I).
     
     %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
     
@@ -54,32 +76,67 @@ rules
     %   if we recieved C does of vaccine X,
     %   and person P contains vaccine X at step C (which means containing C doses) 
     
-    goal(P,X,I):-
-        dose_set(X,C),
-        holds(contains(P,X),I),
-        C == I.
+    success(P,I):- goal(P,I).
+    
+ 
+    
+    % Goal for all 4 doses of hboc
+    goal(P,I):-
+        D = 4,
+        holds(contains(P,hboc),D),
+        -mixed_series(P,I),
+        I+1 >= D.
 
-    
-    
-    
-    
+    % Goal for all 3 doses of prpomp
+    goal(P,I):-
+        D = 3,
+        holds(contains(P,prpomp),D),
+        -mixed_series(P,I),
+        I+1 >= D.
+        
+    % If mixed series (treat everything as HbOC and use 4 dose schedule)
+    goal(P,I):-
+        D = 4,
+        mixed_series(P,I),
+        holds(contains(P,prpomp),D),
+        I+1 >= D.
+        
+
+
     
     %%%%%%%%%%% Test cases %%%%%%%%%%%
     
     
     
     % Case 1 (4 hboc)
-    occurs(give(hanayo,hboc),0).
-    occurs(give(hanayo,hboc),1).
-    occurs(give(hanayo,hboc),2).
-    occurs(give(hanayo,hboc),3).
+    %occurs(give(hanayo,hboc),0).
+    %occurs(give(hanayo,hboc),1).
+    %occurs(give(hanayo,hboc),2).
+    %occurs(give(hanayo,hboc),3).
    
 
     % Case 2 (3 prpomp)
-     %occurs(give(hanayo,prpomp),1).
-     %occurs(give(hanayo,prpomp),1).
-     %occurs(give(hanayo,prpomp),1).
+    %occurs(give(hanayo,prpomp),1).
+    %occurs(give(hanayo,prpomp),2).
+    %occurs(give(hanayo,prpomp),3).
 
-    % Case 3
+    % Case 3  (mixed series, treat all as hboc, 4 dose schedule)
+    %occurs(give(hanayo,hboc),0).
+    %occurs(give(hanayo,prpomp),1).
+    %occurs(give(hanayo,prpomp),2).
+    %occurs(give(hanayo,prpomp),3).
+    
+    % Case 4 (special  schedule: prpomp dose 1, hboc dose 2-4)
+    occurs(give(hanayo,prpomp),0).
+    occurs(give(hanayo,hboc),1).
+    occurs(give(hanayo,hboc),2).
+    occurs(give(hanayo,hboc),3).
+    
 
+ 
+ 
+ 
+ 
+ 
+ 
  
