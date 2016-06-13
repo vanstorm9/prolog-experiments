@@ -1,0 +1,106 @@
+% Situation
+%=== The following is an except from a CPG and a local customization of the CPG ===
+
+% A general CPG (Clinical Practice Guideline) states
+
+% "There are two different brands of Hib vaccine, HbOC and PRPOMP. The guideline recommends that a child should receive all of one brand or all of the other. It takes four doses to complete the series using HbOC and three doses using PRPOMP.
+
+% If a child has already received both brands (a “mixed series”), then all doses are treated as if they were HbOC and the four-dose schedule is used."
+
+% A local customization of the CPG allows a special schedule using PRPOMP for dose 1 and HbOC for doses 2–4.
+
+% ======
+
+#const n = 50.
+
+sorts
+    #step = 0 .. n.
+    #num_dose = 0 .. n.
+    #person = {hanayo, umi, eli, rin, honoka, nozomi, maki, kotori, nico}.
+    #vaccine = {hboc,prpomp}.
+    #fluent = contains(#person, #vaccine).
+    #action = give(#person, #vaccine).
+    
+predicates
+    holds(#fluent, #step).
+    occurs(#action, #step).
+    dose_set(#vaccine, #num_dose).
+    mixed_series(#person, #step).
+    
+    inital_state(#person, #step).
+    success().
+    goal(#person, #step).
+    
+    
+rules
+    dose_set(hboc,4).
+    dose_set(prpomp,3).
+
+    % The person contains a vaccine dose if he/she was given a vaccine dose
+    % Person P contains vaccine X at step I+1,if person P is given vaccine X at step I
+    
+    holds(contains(P,X),I+1):- occurs(give(P,X),I).
+
+    % Inertia axiom
+    % Person P contains vaccine X at step I+1, if person P was given vaccine X at step I 
+    
+    holds(contains(P,X),I+1):- holds(contains(P,X),I).
+    
+
+    % Person P has mixed series at step I,
+    %   if person P contains vaccine A at step I,  
+    %   if person P contains vaccine B at step I,
+    %   A does NOT equal to B
+    
+    mixed_series(P,I):-
+        holds(contains(P,A),I),
+        holds(contains(P,B),I),
+        A != B.
+        
+    
+    % Closed world assumption
+    % It is not a mixed series, if we do not have a reason to believe it is a mixed series
+    -mixed_series(P,I):- not mixed_series(P,I).
+    
+    -goal(P,I):- not goal(P,I).
+    
+    %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
+    
+    % We will achieve our goal,
+    %   if we recieved C does of vaccine X,
+    %   and person P contains vaccine X at step C (which means containing C doses) 
+    
+    success :- goal(P,I).
+    %:- not success.
+ 
+ 
+    % Do not allow concurrent actions
+    
+ 
+    
+    % Goal for all 4 doses of hboc
+    goal(P,I):-
+        D = 4,
+        holds(contains(P,hboc),D),
+        -mixed_series(P,I),
+        I+1 >= D.
+
+    % Goal for all 3 doses of prpomp
+    goal(P,I):-
+        D = 3,
+        holds(contains(P,prpomp),D),
+        -mixed_series(P,I),
+        I+1 >= D.
+        
+    % If mixed series (treat everything as HbOC and use 4 dose schedule)
+    goal(P,I):-
+        D = 4,
+        mixed_series(P,I),
+        holds(contains(P,prpomp),D),
+        I+1 >= D.
+
+    
+
+ 
+
+ 
