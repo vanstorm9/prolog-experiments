@@ -11,7 +11,9 @@
 
 % ======
 
-#const n = 4.
+% Set the const n value to a lower number so that paths with unnecessary actions 
+% will not be printed oout
+#const n = 4.   
 
 sorts
     #step = 0 .. n.
@@ -43,30 +45,22 @@ rules
     
     %holds(contains(P,X,D+1,C),I+1):- occurs(give(P,X),I).
 
-    % Inertia axiom
-    %holds(contains(P,hboc,D+1,incomplete),I+1):- holds(contains(P, hboc, D, C),I).
-
-    holds(contains(P,hboc,D+1,complete),I+1):-
-            holds(contains(P, hboc, D, C),I),
-            occurs(give(P,hboc),I),
-            (D+1)= 4.
-
-    holds(contains(P,hboc,D+1,incomplete),I+1):-
-            holds(contains(P, hboc, D, C),I),
-            occurs(give(P,hboc),I),
-            (D+1) < 4.
-
-    %holds(contains(P,hboc,D+1,complete),I+1):- 
-    %    holds(contains(P,hboc,D,C),I),
-    %    occurs(give(P,hboc),I),
-    %    (D+1) = 4.
     
-    %holds(contains(P,hboc,D+1,incomplete),I+1):- 
-    %    holds(contains(P,hboc,D,C),I),
-    %    occurs(give(P,hboc),I),
-    %    (D+1) < 4.
+    % No need for an inertia axiom, we do not want things to stay the same in the next step
+    % Instead, we want there to be an update for each step (as we transition to next state)
     
-    
+    % Transition to  next step and set to complete
+    holds(contains(P,hboc,D+1,complete),I+1):-  
+            holds(contains(P, hboc, D, C),I),     % If vaccine is hboc in the current step
+            occurs(give(P,hboc),I),     % this prevents entire graph from printing out
+            (D+1)= 4.  % The total amount of dose now must equal to 4.
+
+    % Transition to  next step (still set to incomplete)
+    holds(contains(P,hboc,D+1,incomplete),I+1):-  
+            holds(contains(P, hboc, D, C),I),     % If vaccine is hboc in the current step
+            occurs(give(P,hboc),I),    % this prevents entire graph from printing out
+            (D+1) < 4.   % The total amount of dose is lower than four
+
 
     % Person P has mixed series at step I,
     %   if person P contains vaccine A at step I,  
@@ -79,7 +73,7 @@ rules
     %    A != B.
         
 
-     % If something happens, something occurs
+     % If something occurs, that means something happens
     happens(I) :- occurs(A,I).
     
     % Do not allow concurrent actions
@@ -94,7 +88,7 @@ rules
 
     
     % Sucess is reached when the goal has been reached
-    success(true) :- goal(I), I <= 4.
+    success(true) :- goal(I), I <= n.
     
     % Success must be reached
     :- not success(true).
@@ -103,11 +97,14 @@ rules
     :- not happens(I), not goal(I).
  
     % Defined goal
+    % goal is reached if our we reach the "complete" condition
     goal(I):- holds(contains(hanayo,V,D,complete),I).
        
     %%%%%% Inital State %%%%%%
     holds(contains(hanayo,hboc,0,incomplete),0).
     
+    
+% Allows us to display the planned path in terms of occurs and holds.
 display
-    holds(X1,Y1).
     occurs(X2,Y2).
+    holds(X1,Y1).
