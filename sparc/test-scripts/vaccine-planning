@@ -19,17 +19,19 @@ sorts
     #cur_dose = 0 .. n.
     #person = {hanayo, umi, eli, rin, honoka, nozomi, maki, kotori, nico}.
     #vaccine = {hboc,prpomp}.
-    #fluent = contains(#person, #vaccine, #cur_dose).
-    #action = give(#person, #vaccine).
-    #completed = {completed, notcomplete}.
-    
+    #completed = {completed, incomplete}.
     #bool = {true, false}.
+    #fluent = contains(#person, #vaccine, #cur_dose, #completed).
+    #action = give(#person, #vaccine).
     
 predicates
     holds(#fluent, #step).
     occurs(#action, #step).
     dose_set(#vaccine, #num_dose).
     mixed_series(#person, #step).
+    
+    
+    happens(#step).
     
     inital_state(#person, #step).
     success(#bool).
@@ -43,12 +45,16 @@ rules
     % The person contains a vaccine dose if he/she was given a vaccine dose
     % Person P contains vaccine X at step I+1,if person P is given vaccine X at step I
     
-    holds(contains(P,X,D),I+1):- occurs(give(P,X),I).
+    holds(contains(P,X,D+1,C),I+1):- occurs(give(P,X),I).
+
+    % If something happens, something occurs
+    happens(I) :- occurs(give(P,X),I).
+
 
     % Inertia axiom
     % Person P contains vaccine X at step I+1, if person P was given vaccine X at step I 
     
-    holds(contains(P,X,D),I+1):- holds(contains(P,X),I).
+    holds(contains(P,X,D,C),I+1):- holds(contains(P,X,D,C),I).
     
 
     % Person P has mixed series at step I,
@@ -57,8 +63,8 @@ rules
     %   A does NOT equal to B
     
     mixed_series(P,I):-
-        holds(contains(P,A,D),I),
-        holds(contains(P,B,D),I),
+        holds(contains(P,A,D,C),I),
+        holds(contains(P,B,D,C),I),
         A != B.
         
     
@@ -69,28 +75,22 @@ rules
     -goal(P,I):- not goal(P,I).
     
     
-    
-    % Concurrent actions are not allowed
-    :- occurs(give(P,X1),I),
-        occurs(give(P,X2),I),
-        X1 != X2.
-    
-    
-    
     %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
     
     % We will achieve our goal,
     %   if we recieved C does of vaccine X,
     %   and person P contains vaccine X at step C (which means containing C doses) 
     
-    occurs(A,I) | -occurs(A,I):- not goal(P,I).
+    %occurs(A,I) | -occurs(A,I):- not goal(P,I).
     
     success(true) :- goal(P,I).
-    :- not success(true).
+    %:- not success(true).
  
  
     % Do not allow concurrent actions
-    
+    :- occurs(give(P,X1),I),
+        occurs(give(P,X2),I),
+        X1 != X2.
  
     
     % Goal for all 4 doses of hboc
@@ -118,10 +118,11 @@ rules
 
 
     %%%%%% Inital State %%%%%%
-    holds(contains(hanayo,hboc,0),0).
+    holds(contains(hanayo,hboc,0,incomplete),0).
 
 
 
 display
-    occurs(X,Y).
+    holds(X1,Y1).
+    occurs(X2,Y2).
 
