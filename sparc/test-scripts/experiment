@@ -8,9 +8,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sorts
-    #patient = {hanayo, umi, eli}.
+    #patient = {hanayo}.
     % defines vaccine being administered
-    #vaccine = {h, p}.
+    #vaccine = {hboc, prpomp}.
     % defines steps taken towards vaccination
     #dose = 0..4.
     % step records actions taken
@@ -29,7 +29,7 @@ predicates
     occurs(#action, #step).
     
     % hold maintains the state of the vaccination process at each step
-    hold(#fluent, #step).
+    holds(#fluent, #step).
 
     % happens denotes something is occuring at a step
     happens(#step).
@@ -41,94 +41,75 @@ predicates
     success(#bool).
 
 rules
-    % test basic h patient
-    -hold(contains(umi, h, 0, incomplete), 0).
-    % occurs(administer(charlie, h), 0).
-    % occurs(administer(charlie, h), 1).
-    % occurs(administer(charlie, h), 2).
-    % occurs(administer(charlie, h), 3).
-    % occurs(administer(charlie, h), 4).
-    
-    % test basic p patient
-    -hold(contains(eli, p, 0, incomplete), 0).
-    % occurs(administer(lei, p), 0).
-    % occurs(administer(lei, p), 1).
-    % occurs(administer(lei, p), 2).
-    % occurs(administer(lei, p), 3).
-
     % test basic local customiaztion patient
-    hold(contains(hanayo, h, 0, incomplete), 0).
-    % occurs(administer(carolyn, p), 0).
-    % occurs(administer(carolyn, p), 1).
-    % occurs(administer(carolyn, p), 2).
-    % occurs(administer(carolyn, h), 3).
+    holds(contains(hanayo, hboc, 0, incomplete), 0).
 
     % RULES FOR UPDATING THE STATE OF A PATIENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % when the type of vaccine matches, we check for type and completion
     % type h updates regularly for 4 doses
-    hold(contains(PATIENT, h, DOSE + 1, complete), STEP + 1) :- 
-        hold(contains(PATIENT, h, DOSE, STATUS), STEP),
-        occurs(give(PATIENT, h), STEP),
-        (DOSE + 1) = 4.
+    holds(contains(P, hboc, D + 1, complete), I + 1) :- 
+        holds(contains(P, hboc, D, C), I),
+        occurs(give(P, hboc), I),
+        (D + 1) = 4.
         
-    hold(contains(PATIENT, h, DOSE + 1, incomplete), STEP + 1) :- 
-        hold(contains(PATIENT, h, DOSE, STATUS), STEP),
-        occurs(give(PATIENT, h), STEP),
-        (DOSE + 1) < 4.
+    holds(contains(P, hboc, D + 1, incomplete), I + 1) :- 
+        holds(contains(P, hboc, D, C),I),
+        occurs(give(P, hboc), I),
+        (D + 1) < 4.
 
     % type p updates regularly for 3 doses
-    hold(contains(PATIENT, p, DOSE + 1, complete), STEP + 1) :- 
-        hold(contains(PATIENT, p, DOSE, STATUS), STEP),
-        occurs(give(PATIENT, p), STEP),
-        (DOSE + 1) = 3.
-    hold(contains(PATIENT, p, DOSE + 1, incomplete), STEP + 1) :- 
-        hold(contains(PATIENT, p, DOSE, STATUS), STEP),
-        occurs(give(PATIENT, p), STEP),
-        (DOSE + 1) < 3.
+    %hold(contains(PATIENT, p, DOSE + 1, complete), STEP + 1) :- 
+    %    hold(contains(PATIENT, p, DOSE, STATUS), STEP),
+    %    occurs(give(PATIENT, p), STEP),
+    %    (DOSE + 1) = 3.
+    %hold(contains(PATIENT, p, DOSE + 1, incomplete), STEP + 1) :- 
+    %    hold(contains(PATIENT, p, DOSE, STATUS), STEP),
+    %    occurs(give(PATIENT, p), STEP),
+    %    (DOSE + 1) < 3.
         
     % when the type of vaccine administered does not match the previous dose, 
     % case 1: p for first dose and h for dose 2-4
-    hold(contains(PATIENT, h, DOSE + 1, incomplete), 2) :- 
-        hold(contains(PATIENT, p, DOSE, STATUS), 1),
-        occurs(give(PATIENT, h), 1),
-        (DOSE + 1) < 4.
+    %hold(contains(PATIENT, h, DOSE + 1, incomplete), 2) :- 
+    %    hold(contains(PATIENT, p, DOSE, STATUS), 1),
+    %    occurs(give(PATIENT, h), 1),
+    %    (DOSE + 1) < 4.
     % case 2: doses are mixed at any point, h plan will be followed for 4 doses
     % note that the rule should swap to run on plan h as defined above
     % the mistake MUST be added to the state then swap to h
-    hold(contains(PATIENT, h, DOSE + 1, incomplete), STEP + 1) :-
-        hold(contains(PATIENT, V1, DOSE, STATUS), STEP),
-        occurs(give(PATIENT, V2), STEP),
-        V1 != V2,
-        (DOSE + 1) < 4.
+    %hold(contains(PATIENT, h, DOSE + 1, incomplete), STEP + 1) :-
+    %    hold(contains(PATIENT, V1, DOSE, STATUS), STEP),
+    %    occurs(give(PATIENT, V2), STEP),
+    %    V1 != V2,
+    %    (DOSE + 1) < 4.
 
     % COMMON SENSE RULES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % no two actions may occur for a patient at one step
-    :- occurs(give(PATIENT, V1), STEP),
-        occurs(give(PATIENT, V2), STEP),
-        V1 != V2.
+    :- occurs(give(PATIENT, X1), STEP),
+        occurs(give(PATIENT, X2), STEP),
+        X1 != X2.
 
     % a state will not hold initially if it was not defined initially as held
     % -hold(F, 0) :- not hold(F, 0).
 
     % a patient may not have two states at one step 
     % the dose must increment at each step
-    :- hold(give(P, H1, D1, S1), I), 
-        hold(contains(P, H2, D2, S2), I),
-        D1 != D2.
+    %:- hold(give(P, H1, D1, S1), I), 
+    %    hold(contains(P, H2, D2, S2), I),
+    %    D1 != D2.
 
     %% WORKING HERE
 
     % an action will not occur for a patient without a selected plan
     % note that patients that are objects must be declared as not having
     % a plan or the system may create one for them
-    -occurs(give(PATIENT, VACCINE), STEP) :- 
-        -hold(contains(PATIENT, ANYVACCINE, ANYDOSE, ANYSTATUS), 0).
+    %-occurs(give(PATIENT, VACCINE), STEP) :- 
+    %    -hold(contains(PATIENT, ANYVACCINE, ANYDOSE, ANYSTATUS), 0).
 
     % if goal is complete, there are no more vaccine adminstrations
-    hold(contains(P,V,D,complete),I+1) :- hold(contains(P,V,D,complete),I).
-    -occurs(A,I) :- hold(contains(P,V,D,complete),I).
+    %hold(contains(P,V,D,complete),I+1) :- hold(contains(P,V,D,complete),I).
+    %-occurs(A,I) :- hold(contains(P,V,D,complete),I).
 
     % PLANNING RULES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -142,16 +123,16 @@ rules
     :- not happens(I), not goal(I).
     
     % success is reached when goal is true within some step count
-    success(t) :- goal(STEP), STEP <= 4.
+    success(t) :- goal(I), I <= 4.
 
     % success must be reached
     :- not success(t).
 
     % the goal is the completion of vaccination for some patient
-    goal(STEP) :- hold(contains(hanayo, VACCINE, DOSE, complete), STEP).
+    goal(I) :- holds(contains(hanayo, V, D, complete), I).
 
 display
-    hold(X1, Y1).
+    holds(X1, Y1).
     occurs(X2, Y2).
 
 
