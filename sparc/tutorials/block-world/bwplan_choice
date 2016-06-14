@@ -168,3 +168,7 @@ goal(I) :-
                      
 %% Alternative Goal:
 %goal(I) :- holds(on(b3,t),I).
+
+display
+    occurs(X1,X2).
+
