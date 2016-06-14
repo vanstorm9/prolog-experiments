@@ -11,15 +11,14 @@
 
 % ======
 
-#const n = 50.
+#const n = 10.
 
 sorts
     #step = 0 .. n.
-    #num_dose = 0 .. n.
     #cur_dose = 0 .. n.
-    #person = {hanayo, umi, eli, rin, honoka, nozomi, maki, kotori, nico}.
+    #person = {hanayo}.
     #vaccine = {hboc,prpomp}.
-    #completed = {completed, incomplete}.
+    #completed = {complete, incomplete}.
     #bool = {true, false}.
     #fluent = contains(#person, #vaccine, #cur_dose, #completed).
     #action = give(#person, #vaccine).
@@ -27,7 +26,6 @@ sorts
 predicates
     holds(#fluent, #step).
     occurs(#action, #step).
-    dose_set(#vaccine, #num_dose).
     mixed_series(#person, #step).
     
     
@@ -35,12 +33,10 @@ predicates
     
     inital_state(#person, #step).
     success(#bool).
-    goal(#person, #step).
+    goal(#step).
     
     
 rules
-    dose_set(hboc,4).
-    dose_set(prpomp,3).
 
     % The person contains a vaccine dose if he/she was given a vaccine dose
     % Person P contains vaccine X at step I+1,if person P is given vaccine X at step I
@@ -50,11 +46,19 @@ rules
     % If something happens, something occurs
     happens(I) :- occurs(give(P,X),I).
 
-
     % Inertia axiom
-    % Person P contains vaccine X at step I+1, if person P was given vaccine X at step I 
+    holds(contains(P,hboc,D+1,incomplete),I+1):- holds(contains(P, hboc, D, C),I).
+
+    %holds(contains(P,hboc,D+1,complete),I+1):- 
+    %    holds(contains(P,hboc,D,C),I),
+    %    occurs(give(P,hboc),I),
+    %    (D+1) = 4.
     
-    holds(contains(P,X,D,C),I+1):- holds(contains(P,X,D,C),I).
+    %holds(contains(P,hboc,D+1,incomplete),I+1):- 
+    %    holds(contains(P,hboc,D,C),I),
+    %    occurs(give(P,hboc),I),
+    %    (D+1) < 4.
+    
     
 
     % Person P has mixed series at step I,
@@ -72,8 +76,7 @@ rules
     % It is not a mixed series, if we do not have a reason to believe it is a mixed series
     -mixed_series(P,I):- not mixed_series(P,I).
     
-    -goal(P,I):- not goal(P,I).
-    
+
     
     %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
     
@@ -81,10 +84,12 @@ rules
     %   if we recieved C does of vaccine X,
     %   and person P contains vaccine X at step C (which means containing C doses) 
     
-    %occurs(A,I) | -occurs(A,I):- not goal(P,I).
+    occurs(A,I) | -occurs(A,I):- not goal(I).
     
-    success(true) :- goal(P,I).
-    %:- not success(true).
+    success(true) :- goal(I).
+    :- not success(true).
+    
+    :- happens(I), not goal(I).
  
  
     % Do not allow concurrent actions
@@ -94,35 +99,17 @@ rules
  
     
     % Goal for all 4 doses of hboc
-    goal(P,I):-
-        D = 4,
-        holds(contains(P,hboc,X),D),
-        -mixed_series(P,I),
-        I+1 >= D.
-
-    % Goal for all 3 doses of prpomp
-    goal(P,I):-
-        D = 3,
-        holds(contains(P,prpomp,X),D),
-        -mixed_series(P,I),
-        I+1 >= D.
-        
-    % If mixed series (treat everything as HbOC and use 4 dose schedule)
-    goal(P,I):-
-        D = 4,
-        mixed_series(P,I),
-        holds(contains(P,prpomp,X),D),
-        I+1 >= D.
+    goal(I):- holds(contains(hanayo,hboc,1,incomplete),1).
+       
 
 
 
 
     %%%%%% Inital State %%%%%%
     holds(contains(hanayo,hboc,0,incomplete),0).
-
+    
 
 
 display
     holds(X1,Y1).
     occurs(X2,Y2).
-
