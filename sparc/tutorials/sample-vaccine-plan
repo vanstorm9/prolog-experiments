@@ -1,0 +1,157 @@
+%% vaccination
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Template for a SPARC file
+%% Author: 
+%% Description: displays all possible pathways for a patient at any state 
+%% in the vaccination process
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sorts
+    #patient = {carolyn, charlie, lei}.
+    % defines vaccine being administered
+    #vaccine = {h, p}.
+    % defines steps taken towards vaccination
+    #dose = 0..4.
+    % step records actions taken
+    #step = 0..4.
+    % status describes the completion of the vaccination process
+    #status = {complete, incomplete}.
+    #bool = {t, f}.
+    
+    % defines the action of administering the drug
+    #action = administer(#patient, #vaccine).
+    % define the current state of the vaccination process
+    #fluent = state(#patient, #vaccine, #dose, #status).
+    
+predicates
+    % occurs represents the action of administration taking place
+    occurs(#action, #step).
+    
+    % hold maintains the state of the vaccination process at each step
+    hold(#fluent, #step).
+
+    % happens denotes something is occuring at a step
+    happens(#step).
+
+    % goal is defined by the step at which the vaccination process is complete
+    goal(#step).
+
+    % success is reached when the goal is reached
+    success(#bool).
+
+rules
+    % test basic h patient
+    -hold(state(charlie, h, 0, incomplete), 0).
+    % occurs(administer(charlie, h), 0).
+    % occurs(administer(charlie, h), 1).
+    % occurs(administer(charlie, h), 2).
+    % occurs(administer(charlie, h), 3).
+    % occurs(administer(charlie, h), 4).
+    
+    % test basic p patient
+    -hold(state(lei, p, 0, incomplete), 0).
+    % occurs(administer(lei, p), 0).
+    % occurs(administer(lei, p), 1).
+    % occurs(administer(lei, p), 2).
+    % occurs(administer(lei, p), 3).
+
+    % test basic local customiaztion patient
+    hold(state(carolyn, p, 0, incomplete), 0).
+    % occurs(administer(carolyn, p), 0).
+    % occurs(administer(carolyn, p), 1).
+    % occurs(administer(carolyn, p), 2).
+    % occurs(administer(carolyn, h), 3).
+
+    % RULES FOR UPDATING THE STATE OF A PATIENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % when the type of vaccine matches, we check for type and completion
+    % type h updates regularly for 4 doses
+    hold(state(PATIENT, h, DOSE + 1, complete), STEP + 1) :- 
+        hold(state(PATIENT, h, DOSE, STATUS), STEP),
+        occurs(administer(PATIENT, h), STEP),
+        (DOSE + 1) = 4.
+    hold(state(PATIENT, h, DOSE + 1, incomplete), STEP + 1) :- 
+        hold(state(PATIENT, h, DOSE, STATUS), STEP),
+        occurs(administer(PATIENT, h), STEP),
+        (DOSE + 1) < 4.
+
+    % type p updates regularly for 3 doses
+    hold(state(PATIENT, p, DOSE + 1, complete), STEP + 1) :- 
+        hold(state(PATIENT, p, DOSE, STATUS), STEP),
+        occurs(administer(PATIENT, p), STEP),
+        (DOSE + 1) = 3.
+    hold(state(PATIENT, p, DOSE + 1, incomplete), STEP + 1) :- 
+        hold(state(PATIENT, p, DOSE, STATUS), STEP),
+        occurs(administer(PATIENT, p), STEP),
+        (DOSE + 1) < 3.
+        
+    % when the type of vaccine administered does not match the previous dose, 
+    % case 1: p for first dose and h for dose 2-4
+    hold(state(PATIENT, h, DOSE + 1, incomplete), 2) :- 
+        hold(state(PATIENT, p, DOSE, STATUS), 1),
+        occurs(administer(PATIENT, h), 1),
+        (DOSE + 1) < 4.
+    % case 2: doses are mixed at any point, h plan will be followed for 4 doses
+    % note that the rule should swap to run on plan h as defined above
+    % the mistake MUST be added to the state then swap to h
+    hold(state(PATIENT, h, DOSE + 1, incomplete), STEP + 1) :-
+        hold(state(PATIENT, V1, DOSE, STATUS), STEP),
+        occurs(administer(PATIENT, V2), STEP),
+        V1 != V2,
+        (DOSE + 1) < 4.
+
+    % COMMON SENSE RULES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % no two actions may occur for a patient at one step
+    :- occurs(administer(PATIENT, V1), STEP),
+        occurs(administer(PATIENT, V2), STEP),
+        V1 != V2.
+
+    % a state will not hold initially if it was not defined initially as held
+    % -hold(F, 0) :- not hold(F, 0).
+
+    % a patient may not have two states at one step 
+    % the dose must increment at each step
+    :- hold(state(P, H1, D1, S1), I), 
+        hold(state(P, H2, D2, S2), I),
+        D1 != D2.
+
+    %% WORKING HERE
+
+    % an action will not occur for a patient without a selected plan
+    % note that patients that are objects must be declared as not having
+    % a plan or the system may create one for them
+    -occurs(administer(PATIENT, VACCINE), STEP) :- 
+        -hold(state(PATIENT, ANYVACCINE, ANYDOSE, ANYSTATUS), 0).
+
+    % if goal is complete, there are no more vaccine adminstrations
+    hold(state(P,V,D,complete),I+1) :- hold(state(P,V,D,complete),I).
+    -occurs(A,I) :- hold(state(P,V,D,complete),I).
+
+    % PLANNING RULES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % when goal is not reached, an action must be selected at each step
+    occurs(A, I) | -occurs(A, I) :- not goal(I).
+
+    % something happens when something is occuring
+    happens(I) :- occurs(A, I).
+
+    % it is not possible for nothing to happen when goal is not reached
+    :- not happens(I), not goal(I).
+    
+    % success is reached when goal is true within some step count
+    success(t) :- goal(STEP), STEP <= 4.
+
+    % success must be reached
+    :- not success(t).
+
+    % the goal is the completion of vaccination for some patient
+    goal(STEP) :- hold(state(carolyn, VACCINE, DOSE, complete), STEP).
+
+display
+    hold(X1, Y1).
+    occurs(X2, Y2).
+
+
+
