@@ -89,13 +89,13 @@ rules
     %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
 
     % When goal is not reached, an action must be selected at each step
-    occurs(A,I) | -occurs(A,I):- not goal(I).
+    occurs(A,I) | -occurs(A,I) :- not goal(I).
     
     % Something happens when something is occuring
     happens(I) :- occurs(A,I).
     
     % Sucess is reached when the goal has been reached
-    success(true) :- goal(I).
+    success(true) :- goal(I), I <= 4.
     
     % Success must be reached
     :- not success(true).
@@ -111,7 +111,7 @@ rules
  
     
     % Defined goal
-    goal(I):- holds(contains(hanayo,hboc,1,incomplete),1).
+    goal(I):- holds(contains(hanayo,V,D,complete),I).
        
 
 
