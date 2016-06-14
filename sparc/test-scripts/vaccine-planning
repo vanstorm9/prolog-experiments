@@ -16,10 +16,14 @@
 sorts
     #step = 0 .. n.
     #num_dose = 0 .. n.
+    #cur_dose = 0 .. n.
     #person = {hanayo, umi, eli, rin, honoka, nozomi, maki, kotori, nico}.
     #vaccine = {hboc,prpomp}.
-    #fluent = contains(#person, #vaccine).
+    #fluent = contains(#person, #vaccine, #cur_dose).
     #action = give(#person, #vaccine).
+    #completed = {completed, notcomplete}.
+    
+    #bool = {true, false}.
     
 predicates
     holds(#fluent, #step).
@@ -28,7 +32,7 @@ predicates
     mixed_series(#person, #step).
     
     inital_state(#person, #step).
-    success().
+    success(#bool).
     goal(#person, #step).
     
     
@@ -39,12 +43,12 @@ rules
     % The person contains a vaccine dose if he/she was given a vaccine dose
     % Person P contains vaccine X at step I+1,if person P is given vaccine X at step I
     
-    holds(contains(P,X),I+1):- occurs(give(P,X),I).
+    holds(contains(P,X,D),I+1):- occurs(give(P,X),I).
 
     % Inertia axiom
     % Person P contains vaccine X at step I+1, if person P was given vaccine X at step I 
     
-    holds(contains(P,X),I+1):- holds(contains(P,X),I).
+    holds(contains(P,X,D),I+1):- holds(contains(P,X),I).
     
 
     % Person P has mixed series at step I,
@@ -53,8 +57,8 @@ rules
     %   A does NOT equal to B
     
     mixed_series(P,I):-
-        holds(contains(P,A),I),
-        holds(contains(P,B),I),
+        holds(contains(P,A,D),I),
+        holds(contains(P,B,D),I),
         A != B.
         
     
@@ -64,14 +68,25 @@ rules
     
     -goal(P,I):- not goal(P,I).
     
+    
+    
+    % Concurrent actions are not allowed
+    :- occurs(give(P,X1),I),
+        occurs(give(P,X2),I),
+        X1 != X2.
+    
+    
+    
     %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
     
     % We will achieve our goal,
     %   if we recieved C does of vaccine X,
     %   and person P contains vaccine X at step C (which means containing C doses) 
     
-    success :- goal(P,I).
-    %:- not success.
+    occurs(A,I) | -occurs(A,I):- not goal(P,I).
+    
+    success(true) :- goal(P,I).
+    :- not success(true).
  
  
     % Do not allow concurrent actions
@@ -81,14 +96,14 @@ rules
     % Goal for all 4 doses of hboc
     goal(P,I):-
         D = 4,
-        holds(contains(P,hboc),D),
+        holds(contains(P,hboc,X),D),
         -mixed_series(P,I),
         I+1 >= D.
 
     % Goal for all 3 doses of prpomp
     goal(P,I):-
         D = 3,
-        holds(contains(P,prpomp),D),
+        holds(contains(P,prpomp,X),D),
         -mixed_series(P,I),
         I+1 >= D.
         
@@ -96,11 +111,17 @@ rules
     goal(P,I):-
         D = 4,
         mixed_series(P,I),
-        holds(contains(P,prpomp),D),
+        holds(contains(P,prpomp,X),D),
         I+1 >= D.
 
-    
 
- 
 
- 
+
+    %%%%%% Inital State %%%%%%
+    holds(contains(hanayo,hboc,0),0).
+
+
+
+display
+    occurs(X,Y).
+
