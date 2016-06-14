@@ -41,13 +41,21 @@ rules
     % The person contains a vaccine dose if he/she was given a vaccine dose
     % Person P contains vaccine X at step I+1,if person P is given vaccine X at step I
     
-    holds(contains(P,X,D+1,C),I+1):- occurs(give(P,X),I).
+    %holds(contains(P,X,D+1,C),I+1):- occurs(give(P,X),I).
 
     % If something happens, something occurs
     happens(I) :- occurs(give(P,X),I).
 
     % Inertia axiom
-    holds(contains(P,hboc,D+1,incomplete),I+1):- holds(contains(P, hboc, D, C),I).
+    %holds(contains(P,hboc,D+1,incomplete),I+1):- holds(contains(P, hboc, D, C),I).
+
+    holds(contains(P,hboc,D+1,complete),I+1):-
+            holds(contains(P, hboc, D, C),I),
+            (D+1)= 4.
+
+    holds(contains(P,hboc,D+1,incomplete),I+1):-
+            holds(contains(P, hboc, D, C),I),
+            (D+1) < 4.
 
     %holds(contains(P,hboc,D+1,complete),I+1):- 
     %    holds(contains(P,hboc,D,C),I),
@@ -79,17 +87,21 @@ rules
 
     
     %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
-    
-    % We will achieve our goal,
-    %   if we recieved C does of vaccine X,
-    %   and person P contains vaccine X at step C (which means containing C doses) 
-    
+
+    % When goal is not reached, an action must be selected at each step
     occurs(A,I) | -occurs(A,I):- not goal(I).
     
+    % Something happens when something is occuring
+    happens(I) :- occurs(A,I).
+    
+    % Sucess is reached when the goal has been reached
     success(true) :- goal(I).
+    
+    % Success must be reached
     :- not success(true).
     
-    :- happens(I), not goal(I).
+    % It is not possible for nothing to happen while the goal is not reached
+    :- not happens(I), not goal(I).
  
  
     % Do not allow concurrent actions
@@ -98,7 +110,7 @@ rules
         X1 != X2.
  
     
-    % Goal for all 4 doses of hboc
+    % Defined goal
     goal(I):- holds(contains(hanayo,hboc,1,incomplete),1).
        
 
