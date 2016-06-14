@@ -11,7 +11,7 @@
 
 % ======
 
-#const n = 10.
+#const n = 4.
 
 sorts
     #step = 0 .. n.
@@ -91,9 +91,7 @@ rules
 
     % When goal is not reached, an action must be selected at each step
     occurs(A,I) | -occurs(A,I) :- not goal(I).
-    
-    % Something happens when something is occuring
-    happens(I) :- occurs(A,I).
+
     
     % Sucess is reached when the goal has been reached
     success(true) :- goal(I), I <= 4.
@@ -104,22 +102,12 @@ rules
     % It is not possible for nothing to happen while the goal is not reached
     :- not happens(I), not goal(I).
  
- 
-
- 
-    
     % Defined goal
     goal(I):- holds(contains(hanayo,V,D,complete),I).
        
-
-
-
-
     %%%%%% Inital State %%%%%%
     holds(contains(hanayo,hboc,0,incomplete),0).
     
-
-
 display
     holds(X1,Y1).
     occurs(X2,Y2).
