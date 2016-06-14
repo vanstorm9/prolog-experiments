@@ -26,9 +26,8 @@ sorts
     #action = give(#person, #vaccine).
     
 predicates
-    holds(#fluent, #step).
     occurs(#action, #step).
-    mixed_series(#person, #step).
+    holds(#fluent, #step).
     
     
     happens(#step).
@@ -40,37 +39,49 @@ predicates
     
 rules
 
-    % The person contains a vaccine dose if he/she was given a vaccine dose
-    % Person P contains vaccine X at step I+1,if person P is given vaccine X at step I
-    
-    %holds(contains(P,X,D+1,C),I+1):- occurs(give(P,X),I).
-
-    
     % No need for an inertia axiom, we do not want things to stay the same in the next step
     % Instead, we want there to be an update for each step (as we transition to next state)
     
+    %%%%%%%%%%%%%%%%%%%% All doses are the same testcase %%%%%%%%%%%%%%%%%%%% 
+    
+    %%%%%%%%%%%%%% hboc %%%%%%%%%%%%%%
     % Transition to  next step and set to complete
     holds(contains(P,hboc,D+1,complete),I+1):-  
-            holds(contains(P, hboc, D, C),I),     % If vaccine is hboc in the current step
-            occurs(give(P,hboc),I),     % this prevents entire graph from printing out
-            (D+1)= 4.  % The total amount of dose now must equal to 4.
+        holds(contains(P, hboc, D, C),I),     % If vaccine is hboc in the current step
+        occurs(give(P,hboc),I),     % this prevents entire graph from printing out
+        (D+1)= 4.  % The total amount of dose now must equal to 4.
 
     % Transition to  next step (still set to incomplete)
     holds(contains(P,hboc,D+1,incomplete),I+1):-  
-            holds(contains(P, hboc, D, C),I),     % If vaccine is hboc in the current step
-            occurs(give(P,hboc),I),    % this prevents entire graph from printing out
-            (D+1) < 4.   % The total amount of dose is lower than four
+        holds(contains(P, hboc, D, C),I),     % If vaccine is hboc in the current step
+        occurs(give(P,hboc),I),    % this prevents entire graph from printing out
+        (D+1) < 4.   % The total amount of dose is lower than four
 
+    %%%%%%%%%%%%%% prpomp %%%%%%%%%%%%%%
+    holds(contains(P, prpomp, D+1, complete),I+1):-
+        holds(contains(P, prpomp, D, C), I),
+        occurs(give(P,prpomp),I),
+        (D+1) = 3.
+        
+    holds(contains(P, prpomp, D+1, incomplete), I+1):-
+        holds(contains(P, prpomp, D, C), I),
+        occurs(give(P, prpomp), I),
+        (D+1) < 3.
 
-    % Person P has mixed series at step I,
-    %   if person P contains vaccine A at step I,  
-    %   if person P contains vaccine B at step I,
-    %   A does NOT equal to B
+    %%%%%%%%%%%%%%%%%%%% Special case %%%%%%%%%%%%%%%%%%%%
+    holds(contains(P, hboc, D+1, incomplete), I+1):-
+        holds(contains(P,X1, D, C), I),
+        occurs(give(P, X2), I),
+        X1 != X2,
+        (D+1) < 4.
     
-    %mixed_series(P,I):-
-    %    holds(contains(P,A,D,C),I),
-    %    holds(contains(P,B,D,C),I),
-    %    A != B.
+    holds(contains(P, hboc, D+1, incomplete), I+1):-
+        holds(contains(P,prpomp, D, C), I),
+        occurs(give(P, hboc),I),
+        (D+1) < 4.
+    
+
+
         
 
      % If something occurs, that means something happens
@@ -80,6 +91,22 @@ rules
     :- occurs(give(P,X1),I),
         occurs(give(P,X2),I),
         X1 != X2.
+    
+    % A patient may not have two states in more than one step
+    :- holds(contains(P,X1,D1,C1),I),
+        holds(contains(P,X2,D2,C2),I),
+        D1 != D2.
+        
+        
+    % an action will not occur for a patient without a selected plan
+    % note that patients that are objects must be declared as not having
+    % a plan or the system may create one for them  
+    -occurs(give(P,X),I):-
+        -holds(contains(P,X1,D1,C1), 0).   
+        
+    % if goal is complete, there are no more vaccine adminstrations
+    holds(contains(P,X,D,complete), I+1):- holds(contains(P,X,D,complete),I).
+    -occurs(give(P,X),I):- holds(contains(P,X,D,complete),I).
     
     %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
 
@@ -101,10 +128,11 @@ rules
     goal(I):- holds(contains(hanayo,V,D,complete),I).
        
     %%%%%% Inital State %%%%%%
-    holds(contains(hanayo,hboc,0,incomplete),0).
+    %holds(contains(hanayo,hboc,0,incomplete),0).
+    holds(contains(hanayo,prpomp,0,incomplete),0).
     
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
-    occurs(X2,Y2).
-    holds(X1,Y1).
+    occurs(X1,Y1).
+    holds(X2,Y2).
