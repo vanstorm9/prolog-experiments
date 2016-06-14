@@ -43,18 +43,17 @@ rules
     
     %holds(contains(P,X,D+1,C),I+1):- occurs(give(P,X),I).
 
-    % If something happens, something occurs
-    happens(I) :- occurs(give(P,X),I).
-
     % Inertia axiom
     %holds(contains(P,hboc,D+1,incomplete),I+1):- holds(contains(P, hboc, D, C),I).
 
     holds(contains(P,hboc,D+1,complete),I+1):-
             holds(contains(P, hboc, D, C),I),
+            occurs(give(P,hboc),I),
             (D+1)= 4.
 
     holds(contains(P,hboc,D+1,incomplete),I+1):-
             holds(contains(P, hboc, D, C),I),
+            occurs(give(P,hboc),I),
             (D+1) < 4.
 
     %holds(contains(P,hboc,D+1,complete),I+1):- 
@@ -74,17 +73,19 @@ rules
     %   if person P contains vaccine B at step I,
     %   A does NOT equal to B
     
-    mixed_series(P,I):-
-        holds(contains(P,A,D,C),I),
-        holds(contains(P,B,D,C),I),
-        A != B.
+    %mixed_series(P,I):-
+    %    holds(contains(P,A,D,C),I),
+    %    holds(contains(P,B,D,C),I),
+    %    A != B.
         
-    
-    % Closed world assumption
-    % It is not a mixed series, if we do not have a reason to believe it is a mixed series
-    -mixed_series(P,I):- not mixed_series(P,I).
-    
 
+     % If something happens, something occurs
+    happens(I) :- occurs(A,I).
+    
+    % Do not allow concurrent actions
+    :- occurs(give(P,X1),I),
+        occurs(give(P,X2),I),
+        X1 != X2.
     
     %%%%%%%%%%% Goal and Success states %%%%%%%%%%%
 
@@ -104,10 +105,7 @@ rules
     :- not happens(I), not goal(I).
  
  
-    % Do not allow concurrent actions
-    :- occurs(give(P,X1),I),
-        occurs(give(P,X2),I),
-        X1 != X2.
+
  
     
     % Defined goal
