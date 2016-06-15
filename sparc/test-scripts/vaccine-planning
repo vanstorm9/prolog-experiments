@@ -28,7 +28,7 @@ sorts
 predicates
     occurs(#action, #step).
     holds(#fluent, #step).
-    
+    recent_dose(#person, #vaccine, #step).
     
     happens(#step).
     
@@ -49,7 +49,7 @@ rules
     holds(contains(P,hboc,D+1,complete),I+1):-  
         holds(contains(P, hboc, D, C),I),     % If vaccine is hboc in the current step
         occurs(give(P,hboc),I),     % this prevents entire graph from printing out
-        (D+1)= 4.  % The total amount of dose now must equal to 4.
+        (D+1) = 4.  % The total amount of dose now must equal to 4.
 
     % Transition to  next step (still set to incomplete)
     holds(contains(P,hboc,D+1,incomplete),I+1):-  
@@ -86,6 +86,10 @@ rules
 
      % If something occurs, that means something happens
     happens(I) :- occurs(A,I).
+    
+    % If person P was given vaccine X at step I, then the recent dose for person P at step I is vaccine X
+    recent_dose(P,X,I+1) :- occurs(give(P,X),I).
+    
     
     % Do not allow concurrent actions
     :- occurs(give(P,X1),I),
@@ -128,11 +132,14 @@ rules
     goal(I):- holds(contains(hanayo,V,D,complete),I).
        
     %%%%%% Inital State %%%%%%
+    
     %holds(contains(hanayo,hboc,0,incomplete),0).
     holds(contains(hanayo,prpomp,0,incomplete),0).
+    
     
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
     occurs(X1,Y1).
     holds(X2,Y2).
+    %recent_dose(X3, Y3, Z3).
