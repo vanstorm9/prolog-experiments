@@ -27,6 +27,8 @@
 #const max_dose_num = 4.   
 #const remain_num = 4.
 
+#const current_step = 2.
+
 sorts
     #step = 0 .. n.
     #cur_dose = 0 .. n.
@@ -62,10 +64,19 @@ rules
     dose_set(hboc,4).
     dose_set(prpomp,3).
 
-    % Remaining dose is X
-    remain_dose(X, V,I):-
+    % Remaining dose is max_dose - current dose (Z-D) at step I
+    remain_dose(Z-D, V, I):-
         holds(contains(P,V,D,C), I),
-        dose_set(V,D).
+        dose_set(V,Z),
+        not -remain_dose(Z-D,V,I).
+        
+    % Prevents already completed states from being printed out
+    -remain_dose(Z-D,V,I):-
+        holds(contains(P,V,D,C), I),
+        dose_set(V,Z),
+        D >= Z.
+        
+        
         
 
     % No need for an inertia axiom, we do not want things to stay the same in the next step
@@ -166,14 +177,14 @@ rules
        
     %%%%%% Inital State %%%%%%
     
-    holds(contains(hanayo,hboc,0,incomplete),0).
-    %holds(contains(hanayo,prpomp,0,incomplete),0).
+    %holds(contains(hanayo,hboc,0,incomplete),0).
+    holds(contains(hanayo,prpomp,0,incomplete),0).
     
     
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
     occurs(X1,Y1).
-    %holds(X2,Y2).
+    holds(X2,Y2).
     remain_dose(X3, Y3, Z3).
     %recent_dose(X3, Y3, Z3).
