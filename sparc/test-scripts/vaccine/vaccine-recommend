@@ -1,15 +1,14 @@
 % Situation
-%=== The following is an except from a CPG and a local customization of the CPG ===
+%The following is an except from a CPG and a local customization of the CPG
 
 % A general CPG (Clinical Practice Guideline) states
 
-% "There are two different brands of Hib vaccine, HbOC and PRPOMP. The guideline recommends that a child should receive all of one brand or all of the other. It takes four doses to complete the series using HbOC and three doses using PRPOMP.
+% There are two different brands of Hib vaccine, HbOC and PRPOMP. The guideline recommends that a child should receive all of one brand or all of the other. It takes four doses to complete the series using HbOC and three doses using PRPOMP.
 
-% If a child has already received both brands (a “mixed series”), then all doses are treated as if they were HbOC and the four-dose schedule is used."
+% If a child has already received both brands (a mixed series), then all doses are treated as if they were HbOC and the four-dose schedule is used.
 
-% A local customization of the CPG allows a special schedule using PRPOMP for dose 1 and HbOC for doses 2–4.
+% A local customization of the CPG allows a special schedule using PRPOMP for dose 1 and HbOC for doses 2 to 4.
 
-% ======
 
 
 % AGENDA
@@ -228,9 +227,9 @@ rules
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
-    mixed_case(P,T).
-    history(X0,Y0).
-    occurs(X1,Y1).
-    holds(X2,Y2).
+    %mixed_case(P,T).
+    %history(X0,Y0).
+    %occurs(X1,Y1).
+    %holds(X2,Y2).
     remain_dose(W3,X3, Y3, Z3).
     %recent_dose(X3, Y3, Z3).
