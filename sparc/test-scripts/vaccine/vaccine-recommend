@@ -82,13 +82,14 @@ rules
         X1 != X2.
         
     mixed_case(P,true):- 
-        history(contains(P, X1, D, C),  I),
+        history(contains(P, X1, D, C),  I-1),
         holds(contains(P,X2, D, C), I),
-        X1 != X2.
+        X1 != X2,
+        I != 0.
         
         
     % Update the history if person P contains vaccine X at step I
-    history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
+    history(contains(P, X, D, C),  I-1) :- holds(contains(P,X,D,C),I), I!=0.
 
     %history(contains(P, X, D, C),  I) :- occurs(give(P,X),I).
         
@@ -206,17 +207,17 @@ rules
      % Koizumi Hanayo is our patient for this program
     
     % Test case 1 (all 4 hboc)
-    history(contains(hanayo, hboc, 0, incomplete),  0).
-    holds(contains(hanayo,hboc,1,incomplete),1).
+    %history(contains(hanayo, hboc, 0, incomplete),  0).
+    %holds(contains(hanayo,hboc,1,incomplete),1).
     
     % Test case 2 (all 3 prpomp)
     %holds(contains(hanayo,prpomp,0,incomplete),0).
     
     
     % Test case 3 (mixed vaccines)
-    %history(contains(hanayo, hboc, 0, incomplete),  0).
-    %history(contains(hanayo, prpomp, 1, incomplete),  1).
-    %holds(contains(hanayo,prpomp,1,incomplete),1).
+    history(contains(hanayo, hboc, 0, incomplete),  0).
+    history(contains(hanayo, prpomp, 1, incomplete),  1).
+    holds(contains(hanayo,prpomp,1,incomplete),1).
     
     
      % Test case 4 (special scheduling)  (PASSED)
