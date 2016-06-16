@@ -14,6 +14,7 @@
 
 % AGENDA
 % - Can actions that uses all of the same vaccine be generalized into one relation function?
+% - Fix the part in which duplicate paths appear if history feature is used
 % - Implement state system (in order to implement next vaccine feature)
 % - Next vaccine feature
 % - Implement weight heuristics
@@ -31,7 +32,7 @@ sorts
     #cur_dose = 0 .. n.
     #dose_num = 0 .. max_dose_num.
     #rem_num = 0 .. remain_num.
-    #person = {hanayo,umi,eli}.
+    #person = {hanayo,umi,eli,rin, honoka, nozomi, maki, kotori, nico}.
     #vaccine = {hboc,prpomp}.
     #completed = {complete, incomplete}.
     #bool = {true, false}.
@@ -50,6 +51,7 @@ predicates
     holds(#fluent, #step).
     recent_dose(#person, #vaccine, #step).
     
+    mixed_case(#person, #bool).
     
     happens(#step).
     success(#bool).
@@ -74,10 +76,22 @@ rules
         dose_set(V,Z),
         D >= Z.
         
-    % If person P contains vaccine X in step I, then we have a history of person P of vaccine X in step I
+        
+    mixed_case(P,true):- 
+        holds(contains(P,X1, D, C), I),
+        occurs(give(P, X2), I),
+        X1 != X2.
+        
+    mixed_case(P,true):- 
+        history(contains(P, X1, D, C),  I),
+        holds(contains(P,X2, D, C), I),
+        X1 != X2.
+        
+        
+    % Update the history if person P contains vaccine X at step I
     history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
-    
-    %history(contains(P, X, D, C),  I+1) :- occurs(give(P,X),I).
+
+    %history(contains(P, X, D, C),  I) :- occurs(give(P,X),I).
         
 
     % No need for an inertia axiom, we do not want things to stay the same in the next step
@@ -111,19 +125,19 @@ rules
         holds(contains(P, prpomp, D, C), I),
         occurs(give(P, prpomp), I),
         dose_set(prpomp,N),
-        (D+1) < 3.
+        (D+1) < N.
 
     %%%%%%%%%%%%%%%%%%%% Special case %%%%%%%%%%%%%%%%%%%%
     holds(contains(P, hboc, D+1, incomplete), I+1):-
-        holds(contains(P,X1, D, C), I),
-        occurs(give(P, X2), I),
-        X1 != X2,
-        (D+1) < 4.
+        mixed_case(P,true),
+        dose_set(hboc,N),
+        (D+1) < N.
     
     holds(contains(P, hboc, D+1, incomplete), I+1):-
         holds(contains(P,prpomp, D, C), I),
         occurs(give(P, hboc),I),
-        (D+1) < 4.
+        dose_set(hboc,N),
+        (D+1) < N.
     
 
 
@@ -178,17 +192,43 @@ rules
        
     %%%%%% Inital State %%%%%%
 
-    % We are ignoring Umi-chan and Elichika for now
+    % We are ignoring the sea, cat, honk, moo, tomato, bird, Nico-chan and Elichika for now
     -holds(contains(umi,V,D,C),I).
     -holds(contains(eli,V,D,C),I).
+    -holds(contains(rin,V,D,C),I).
+    -holds(contains(honoka,V,D,C),I).
+    -holds(contains(nozomi,V,D,C),I).
+    -holds(contains(maki,V,D,C),I).
+    -holds(contains(kotori,V,D,C),I).
+    -holds(contains(nico,V,D,C),I).
 
+
+    
+     % Koizumi Hanayo is our patient for this program
+    
+    % Test case 1 (all 4 hboc)
     history(contains(hanayo, hboc, 0, incomplete),  0).
-    history(contains(hanayo, prpomp, 1, incomplete),  1).
-    holds(contains(hanayo,prpomp,1,incomplete),1).
+    holds(contains(hanayo,hboc,1,incomplete),1).
+    
+    % Test case 2 (all 3 prpomp)
+    %holds(contains(hanayo,prpomp,0,incomplete),0).
+    
+    
+    % Test case 3 (mixed vaccines)
+    %history(contains(hanayo, hboc, 0, incomplete),  0).
+    %history(contains(hanayo, prpomp, 1, incomplete),  1).
+    %holds(contains(hanayo,prpomp,1,incomplete),1).
+    
+    
+     % Test case 4 (special scheduling)  (PASSED)
+    %history(contains(hanayo, prpomp, 0, incomplete),  0).
+    %history(contains(hanayo, hboc, 1, incomplete),  1).
+    %holds(contains(hanayo,hboc,1,incomplete),1).
 
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
+    mixed_case(P,T).
     history(X0,Y0).
     occurs(X1,Y1).
     holds(X2,Y2).
