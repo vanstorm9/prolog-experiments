@@ -6,6 +6,10 @@
 %% from either given records or protocol selection.
 %%%%%%%
 
+% Flaws
+% Paths to goal are predefined:
+%   - This will not scale well as the graph becomes more complex
+
 sorts
 
 	#drug = {h, p}.				% h, p are the two available drugs for vaccinations
@@ -16,16 +20,16 @@ sorts
 predicates
 
 	% patient medical records with chosen protocol and number of doses administered
-	records(#protocol, #dose).
-	dose(#dose).
-	total_doses(#dose).
+	records(#protocol, #dose).     % sets up the inital state
+	dose(#dose).      % 
+	total_doses(#dose).     % Stores total dose value to display the total doses that are needed 
 	
 	select_protocol(#protocol).
 	protocol(#protocol, #dose).
-	component(#protocol, #drug, #dose).
+	component(#protocol, #drug, #dose).    % Possible used to predefine a path
 	
-	doses_remain(#dose).
-	next_drug(#drug).
+	doses_remain(#dose).         % 
+	next_drug(#drug).     % Used to print out next drug value
 
 	sev_records(#truth).
 	uniform(#truth).
@@ -33,7 +37,7 @@ predicates
 
 rules
 
-%%% PATIENT MEDICAL RECORDS %%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PATIENT MEDICAL RECORDS (INITAL STATES) %%%%%%%%%%%%%%%%%%%%%%%%%
 
 	% enter patient records, if any
 	% if no previous doses, enter desired protocol P in record(P,0)
@@ -45,8 +49,18 @@ rules
 
 	% find the total number of doses administered
 	dose(D) :- records(P,D).
-	total_doses(X) :- dose(X), not -total_doses(X).
-	-total_doses(X) :- dose(Y), dose(X), Y > X.
+	
+	
+	total_doses(X) :- 
+	    dose(X),
+	   not -total_doses(X).      % Commenting this out will result in No Answer Set
+	
+	
+	% Prevents duplicate prints for dose_remain (Determine why) 
+	-total_doses(X) :- 
+	    dose(Y), 
+	    dose(X), 
+	    Y > X.
 
 	% if a certain dosage is not recorded, the dosage wasn't given
 	-records(P,D) :- not records(P,D).
@@ -54,19 +68,25 @@ rules
 %%% ASSIGN PPROTOCOL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	% are there several records given?
+	% conflicting records
 	sev_records(true) :- 
 		records(P1,A1), 
 		records(P2,A2), 
 		A1 != A2.
+		
 	sev_records(false) :- not sev_records(true).
 
 	% do all records use the same protocol?
 	uniform(true) :-  not uniform(false).
+	
+	% Checks if patient contains doses of different vaccines (conflicting vaccines)
 	uniform(false) :- sev_records(true), 
 		records(P1,A1), 
 		records(P2,A2), 
 		A1 != A2, 
 		P1 != P2.
+		
+	
 	uniform(false) :- uniform(false), 
 		sev_records(true), 
 		records(P1,A1), 
@@ -85,6 +105,15 @@ rules
 		P = 4.
 
 %%% PROTOCOL DEFINITIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Indicates the rules for the way the vaccines are administered
+    
+    % protocol(#protocol, #dose).
+    % component(#protocol, #drug, #dose).
+    
+    % A set of components for protocal X represents a single possible path to the goal
+    % NOTE: The path is hardcoded (predefined). Therefore the path is not planned, but rather a predefined one is followed 
+    % (Presence of predefined paths makes this is a flaw) 
 
 	% Protocol 1: 4 doses of drug h
 	protocol(1, 4).
@@ -105,7 +134,7 @@ rules
 	component(3,h,2).
 	component(3,h,3).
 	component(3,h,4).
-
+	
 	% Protocol 4: Mixed protocols, finish total of 4 doses with drug h
 	protocol(4, 4).
 	component(4,h,1).
@@ -116,10 +145,11 @@ rules
 %%% OUTPUT RULES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	% remaining doses in vaccination process
+
 	doses_remain(D-X) :- 
-		select_protocol(P),
+		select_protocol(P),   % Limits output to the procedure we are taking
 		protocol(P,D),
-		total_doses(X).
+		total_doses(X).  
 
 	% next drug to be administered
 	next_drug(D) :- 
