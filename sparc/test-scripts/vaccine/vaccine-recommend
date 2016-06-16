@@ -76,20 +76,22 @@ rules
         D >= Z.
         
         
-    mixed_case(P,true):- 
-        holds(contains(P,X1, D, C), I),
-        occurs(give(P, X2), I),
-        X1 != X2.
+    %mixed_case(P,true):- 
+    %    holds(contains(P,X1, D, C), I),
+    %    occurs(give(P, X2), I),
+    %    X1 != X2.
         
-    mixed_case(P,true):- 
-        history(contains(P, X1, D, C),  I-1),
-        holds(contains(P,X2, D, C), I),
-        X1 != X2,
-        I != 0.
+    %mixed_case(P,true):- 
+    %    history(contains(P, X1, D, C),  I-1),
+    %    holds(contains(P,X2, D, C), I),
+    %    X1 != X2,
+    %    I != 0.
         
         
     % Update the history if person P contains vaccine X at step I
-    history(contains(P, X, D, C),  I-1) :- holds(contains(P,X,D,C),I), I!=0.
+    %history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
+
+    %holds(contains(P,X,D,C),0) :- history(contains(P,X,D,C),0).
 
     %history(contains(P, X, D, C),  I) :- occurs(give(P,X),I).
         
@@ -129,7 +131,9 @@ rules
 
     %%%%%%%%%%%%%%%%%%%% Special case %%%%%%%%%%%%%%%%%%%%
     holds(contains(P, hboc, D+1, incomplete), I+1):-
-        mixed_case(P,true),
+        holds(contains(P,X1, D, C), I),
+        occurs(give(P, X2), I),
+        X1 != X2,
         dose_set(hboc,N),
         (D+1) < N.
     
@@ -208,6 +212,7 @@ rules
     
     % Test case 1 (all 4 hboc)
     %history(contains(hanayo, hboc, 0, incomplete),  0).
+    %history(contains(hanayo, hboc, 1, incomplete),  1).
     %holds(contains(hanayo,hboc,1,incomplete),1).
     
     % Test case 2 (all 3 prpomp)
@@ -215,12 +220,16 @@ rules
     
     
     % Test case 3 (mixed vaccines)
-    history(contains(hanayo, hboc, 0, incomplete),  0).
-    history(contains(hanayo, prpomp, 1, incomplete),  1).
-    holds(contains(hanayo,prpomp,1,incomplete),1).
+    %history(contains(hanayo, hboc, 0, incomplete),  0).
+    %history(contains(hanayo, prpomp, 1, incomplete),  1).
+    %holds(contains(hanayo,prpomp,1,incomplete),1).
+   
+
+    % Test case 4 (mixed vaccines)
+    holds(contains(hanayo, hboc, 0, incomplete),  0).
+ 
     
-    
-     % Test case 4 (special scheduling)  (PASSED)
+     % Test case 5 (special scheduling)  (PASSED)
     %history(contains(hanayo, prpomp, 0, incomplete),  0).
     %history(contains(hanayo, hboc, 1, incomplete),  1).
     %holds(contains(hanayo,hboc,1,incomplete),1).
@@ -230,7 +239,7 @@ rules
 display
     %mixed_case(P,T).
     %history(X0,Y0).
-    %occurs(X1,Y1).
-    %holds(X2,Y2).
+    occurs(X1,Y1).
+    holds(X2,Y2).
     remain_dose(W3,X3, Y3, Z3).
     %recent_dose(X3, Y3, Z3).
