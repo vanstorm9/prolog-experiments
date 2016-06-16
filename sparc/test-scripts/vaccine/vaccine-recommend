@@ -42,6 +42,7 @@ sorts
 predicates
     dose_set(#vaccine, #dose_num).  
     
+    remain_dose(#rem_num, #vaccine, #step).
     
     occurs(#action, #step).
     holds(#fluent, #step).
@@ -61,6 +62,10 @@ rules
     dose_set(hboc,4).
     dose_set(prpomp,3).
 
+    % Remaining dose is X
+    remain_dose(X, V,I):-
+        holds(contains(P,V,D,C), I),
+        dose_set(V,D).
         
 
     % No need for an inertia axiom, we do not want things to stay the same in the next step
@@ -169,4 +174,6 @@ rules
 % Allows us to display the planned path in terms of occurs and holds.
 display
     occurs(X1,Y1).
-    holds(X2,Y2).
+    %holds(X2,Y2).
+    remain_dose(X3, Y3, Z3).
+    %recent_dose(X3, Y3, Z3).
