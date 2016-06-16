@@ -1,8 +1,4 @@
 %%%%%%%
-%%	vaccine.sparc
-%%	Vaccine Administration
-%%	Christa Spieth
-%%
 %% Currently, this program will tell how many
 %% doses remain in a patient's vaccination 
 %% process and which drug should be administered
