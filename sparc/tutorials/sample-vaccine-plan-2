@@ -1,0 +1,144 @@
+%%%%%%%
+%%	vaccine.sparc
+%%	Vaccine Administration
+%%	Christa Spieth
+%%
+%% Currently, this program will tell how many
+%% doses remain in a patient's vaccination 
+%% process and which drug should be administered
+%% next, as well as select the proper protocol
+%% from either given records or protocol selection.
+%%%%%%%
+
+sorts
+
+	#drug = {h, p}.				% h, p are the two available drugs for vaccinations
+	#protocol = 1..4.			% there are 4 different vaccination protocols to choose from
+	#dose = 0..4.				% number of doses received/administered at a given time
+	#truth = {true, false}.		% boolean
+
+predicates
+
+	% patient medical records with chosen protocol and number of doses administered
+	records(#protocol, #dose).
+	dose(#dose).
+	total_doses(#dose).
+	
+	select_protocol(#protocol).
+	protocol(#protocol, #dose).
+	component(#protocol, #drug, #dose).
+	
+	doses_remain(#dose).
+	next_drug(#drug).
+
+	sev_records(#truth).
+	uniform(#truth).
+	treatment_completed(#truth).
+
+rules
+
+%%% PATIENT MEDICAL RECORDS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+	% enter patient records, if any
+	% if no previous doses, enter desired protocol P in record(P,0)
+	%records(3,0).
+	records(2,1).
+	records(2,2).
+	%records(2,3).
+	%records(1,4).
+
+	% find the total number of doses administered
+	dose(D) :- records(P,D).
+	total_doses(X) :- dose(X), not -total_doses(X).
+	-total_doses(X) :- dose(Y), dose(X), Y > X.
+
+	% if a certain dosage is not recorded, the dosage wasn't given
+	-records(P,D) :- not records(P,D).
+
+%%% ASSIGN PPROTOCOL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	% are there several records given?
+	sev_records(true) :- 
+		records(P1,A1), 
+		records(P2,A2), 
+		A1 != A2.
+	sev_records(false) :- not sev_records(true).
+
+	% do all records use the same protocol?
+	uniform(true) :-  not uniform(false).
+	uniform(false) :- sev_records(true), 
+		records(P1,A1), 
+		records(P2,A2), 
+		A1 != A2, 
+		P1 != P2.
+	uniform(false) :- uniform(false), 
+		sev_records(true), 
+		records(P1,A1), 
+		records(P2,A2), 
+		A1 != A2, 
+		P1 != P2.
+
+	% if all doses administered are in the same protocol, use same protocol
+	select_protocol(P) :- 
+		uniform(true), 
+		records(P,A).
+	
+	% if doses administered from different protocols, use protocol 4
+	select_protocol(P) :- 
+		uniform(false), 
+		P = 4.
+
+%%% PROTOCOL DEFINITIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	% Protocol 1: 4 doses of drug h
+	protocol(1, 4).
+	component(1,h,1).
+	component(1,h,2).
+	component(1,h,3).
+	component(1,h,4).
+
+	% Protocol 2: 3 doses of drug p
+	protocol(2, 3).
+	component(2,p,1).
+	component(2,p,2).
+	component(2,p,3).
+
+	% Protocol 3: 1 dose of drug p, 3 doses of drug h
+	protocol(3, 4).
+	component(3,p,1).
+	component(3,h,2).
+	component(3,h,3).
+	component(3,h,4).
+
+	% Protocol 4: Mixed protocols, finish total of 4 doses with drug h
+	protocol(4, 4).
+	component(4,h,1).
+	component(4,h,2).
+	component(4,h,3).
+	component(4,h,4).
+
+%%% OUTPUT RULES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	% remaining doses in vaccination process
+	doses_remain(D-X) :- 
+		select_protocol(P),
+		protocol(P,D),
+		total_doses(X).
+
+	% next drug to be administered
+	next_drug(D) :- 
+		select_protocol(P),
+		total_doses(A),
+		component(P,D,A+1).
+
+	% treatment completion conditions: completed when there are no doses remaining
+	treatment_completed(true) :- doses_remain(0).
+	treatment_completed(false) :- not treatment_completed(true).
+
+display
+
+	records(P,A).
+	select_protocol(P).
+	doses_remain(D).
+	next_drug(A).
+	treatment_completed(D).
