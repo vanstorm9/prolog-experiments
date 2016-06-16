@@ -14,7 +14,6 @@
 
 % AGENDA
 % - Can actions that uses all of the same vaccine be generalized into one relation function?
-% - Implement remaining dose
 % - Implement state system (in order to implement next vaccine feature)
 % - Next vaccine feature
 % - Implement weight heuristics
@@ -77,7 +76,10 @@ rules
         dose_set(V,Z),
         D >= Z.
         
-        
+    % If person P contains vaccine X in step I, then we have a history of person P of vaccine X in step I
+    history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
+    
+    %history(contains(P, X, D, C),  I+1) :- occurs(give(P,X),I).
         
 
     % No need for an inertia axiom, we do not want things to stay the same in the next step
@@ -180,10 +182,8 @@ rules
 
     history(contains(hanayo, hboc, 0, incomplete),  0).
     history(contains(hanayo, prpomp, 1, incomplete),  1).
-    %holds(contains(hanayo,hboc,0,incomplete),0).
-    %holds(contains(hanayo,prpomp,0,incomplete),0).
-    
     holds(contains(hanayo,prpomp,1,incomplete),1).
+
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
