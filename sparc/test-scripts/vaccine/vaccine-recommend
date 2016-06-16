@@ -31,7 +31,7 @@ sorts
     #cur_dose = 0 .. n.
     #dose_num = 0 .. max_dose_num.
     #rem_num = 0 .. remain_num.
-    #person = {hanayo}.
+    #person = {hanayo,umi,eli}.
     #vaccine = {hboc,prpomp}.
     #completed = {complete, incomplete}.
     #bool = {true, false}.
@@ -52,8 +52,6 @@ predicates
     
     
     happens(#step).
-    
-    inital_state(#person, #step).
     success(#bool).
     goal(#step).
     
@@ -179,6 +177,10 @@ rules
     goal(I):- holds(contains(hanayo,V,D,complete),I).
        
     %%%%%% Inital State %%%%%%
+
+    % We are ignoring Umi-chan and Elichika for now
+    -holds(contains(umi,V,D,C),I).
+    -holds(contains(eli,V,D,C),I).
 
     history(contains(hanayo, hboc, 0, incomplete),  0).
     history(contains(hanayo, prpomp, 1, incomplete),  1).
