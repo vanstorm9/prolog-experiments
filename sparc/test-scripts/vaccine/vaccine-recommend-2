@@ -62,9 +62,6 @@ predicates
     remain_dose(#rem_num,#person, #vaccine, #step).
     
     occurs(#action, #step).
-    assign(#action, #step).
-    
-    
     holds(#fluent, #step).
     recent_dose(#person, #vaccine, #step).
     
@@ -93,18 +90,6 @@ rules
         dose_set(V,Z),
         D >= Z.
         
-    
-    % Used to help us position ourselves in certain state
-    assign(give(P,X), I):-
-        occurs(give(P,X),I),
-        not -assign(give(P,X),I).
-        
-    -assign(give(P,X),I1):- 
-        history(contains(P,X,D,C),I2),
-        I1 = I2.
-    
-        
-    
         
     %mixed_case(P,true):- 
     %    holds(contains(P,X1, D, C), I),
@@ -119,7 +104,7 @@ rules
         
         
     % Update the history if person P contains vaccine X at step I
-    %history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
+    history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
 
     holds(contains(P,X,D,C),I) :- history(contains(P,X,D,C),I).
 
@@ -131,23 +116,17 @@ rules
         
 
     % No need for an inertia axiom, we do not want things to stay the same in the next step
-    % Instead, we want there to be an update for each step (as we transition to next state)
+    % Instead, we want there to be an update for each step (as we transition to next state)
     
     %%%%%%%%%%%%%%%%%%%% All doses are the same testcase %%%%%%%%%%%%%%%%%%%% 
     
-    holds(contains(P,V,D+1,complete),I+1):-  
-        holds(contains(P, V, D, C),I),     % If vaccine is hboc in the current step
-        occurs(give(P,V),I),     % this prevents entire graph from printing out
-        dose_set(V,N),
-        (D+1) >= N.  % The total amount of dose now must equal to 4.
-        
-    %holds(contains(P,V,D+1,incomplete),I+1):-  
-    %    holds(contains(P, V, D, C),I),     % If vaccine is hboc in the current step
-    %    occurs(give(V,hboc),I),    % this prevents entire graph from printing out
-    %    dose_set(V,N),
-    %    (D+1) < N.   % The total amount of dose is lower than four
-    
     %%%%%%%%%%%%%% hboc %%%%%%%%%%%%%%
+    % Transition to  next step and set to complete
+    holds(contains(P,hboc,D+1,complete),I+1):-  
+        holds(contains(P, hboc, D, C),I),     % If vaccine is hboc in the current step
+        occurs(give(P,hboc),I),     % this prevents entire graph from printing out
+        dose_set(hboc,N),
+        (D+1) = N.  % The total amount of dose now must equal to 4.
 
     % Transition to  next step (still set to incomplete)
     holds(contains(P,hboc,D+1,incomplete),I+1):-  
@@ -157,42 +136,34 @@ rules
         (D+1) < N.   % The total amount of dose is lower than four
 
     %%%%%%%%%%%%%% prpomp %%%%%%%%%%%%%%
-
-    holds(contains(P, prpomp, D+1, complete), I+1):-
+    holds(contains(P, prpomp, D+1, complete),I+1):-
         holds(contains(P, prpomp, D, C), I),
-        occurs(give(P, prpomp), I),
+        occurs(give(P,prpomp),I),
         dose_set(prpomp,N),
-        (D+1) >= N.
+        (D+1) = N.
         
-    
-
     holds(contains(P, prpomp, D+1, incomplete), I+1):-
         holds(contains(P, prpomp, D, C), I),
         occurs(give(P, prpomp), I),
         dose_set(prpomp,N),
         (D+1) < N.
-        
-
 
     %%%%%%%%%%%%%%%%%%%% Special case %%%%%%%%%%%%%%%%%%%%
     holds(contains(P, hboc, D+1, incomplete), I+1):-
         holds(contains(P,X1, D, C), I),
         occurs(give(P, X2), I),
-        holds(contains(P,prpomp,D,C),0),
         X1 != X2,
         dose_set(hboc,N),
         (D+1) < N.
-    
-    
     
     holds(contains(P, hboc, D+1, incomplete), I+1):-
         holds(contains(P,prpomp, D, C), I),
         occurs(give(P, hboc),I),
         dose_set(hboc,N),
         (D+1) < N.
-        
-   
     
+
+
         
 
      % If something occurs, that means something happens
@@ -255,20 +226,20 @@ rules
     -holds(contains(nico,V,D,C),I).
 
     % Test case 0
-    holds(contains(hanayo,prpomp,1,incomplete),0).
-    %holds(contains(hanayo,hboc,1,incomplete),0).
+    %holds(contains(hanayo,prpomp,0,incomplete),0).
+    holds(contains(hanayo,hboc,0,incomplete),0).
     
     % Test case 1
-    %history(contains(hanayo, hboc, 1, incomplete),  0).
-    %history(contains(hanayo, hboc, 2, incomplete),  1).
-    %holds(contains(hanayo,hboc,2,incomplete),1).
+    %history(contains(hanayo, hboc, 0, incomplete),  0).
+    %history(contains(hanayo, hboc, 1, incomplete),  1).
+    %holds(contains(hanayo,hboc,1,incomplete),1).
 
 
     % Test case 2 (all 3 prpomp)
     % Incorrect: prpomp 0 and hboc appeared (case 3)
-    history(contains(hanayo, prpomp, 1, incomplete),  0).
-    history(contains(hanayo, prpomp, 2, incomplete),  1).
-    holds(contains(hanayo,prpomp,2,incomplete),1).
+    %history(contains(hanayo, prpomp, 0, incomplete),  0).
+    %history(contains(hanayo, prpomp, 1, incomplete),  1).  % This mean occurrs prpomp happened at step 0
+    %holds(contains(hanayo,prpomp,1,incomplete),1).
     
     
     % Test case 3 (mixed vaccines)
@@ -291,8 +262,7 @@ rules
 display
     %mixed_case(P,T).
     %history(X0,Y0).
-    assign(XX1, YY1).
-    %occurs(X1,Y1).
+    occurs(X1,Y1).
     %holds(X2,Y2).
     %remain_dose(W3,X3, Y3, Z3).
     %recent_dose(X3, Y3, Z3).
