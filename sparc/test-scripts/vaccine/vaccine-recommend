@@ -33,8 +33,6 @@
 % We use HISTORY to see if the history is being recoreded properly
 
 
-
-
 % Set the const n value to a lower number so that paths with unnecessary actions 
 % will not be printed oout
 #const n = 4.   
@@ -74,8 +72,6 @@ predicates
     
     remaining_doses(#dose_num).
     
-    mixed_case(#person, #bool).
-    
     happens(#step).
     success(#bool).
     goal(#step).
@@ -88,9 +84,6 @@ rules
     dose_set(prpomp,3).
 
     
-    
-    
-
     % Remaining dose is max_dose - current dose (Z-D) at step I
     remain_dose(Z-D, P, V, I):-
         holds(contains(P,V,D,C), I),
@@ -103,8 +96,6 @@ rules
         remain_dose(Y, P, V, II).
         
   
-    
-        
     % Prevents already completed states from being printed out
     -remain_dose(Z-D, P, V,I):-
         holds(contains(P,V,D,C), I),
@@ -126,28 +117,12 @@ rules
     next_vaccine(hboc) :- path(give(P,hboc),0).
     next_vaccine(prpomp) :- path(give(P,prpomp),0).
     
-    
-    
-        
-    %mixed_case(P,true):- 
-    %    holds(contains(P,X1, D, C), I),
-    %    occurs(give(P, X2), I),
-    %    X1 != X2.
-        
-    %mixed_case(P,true):- 
-    %    history(contains(P, X1, D, C),  I-1),
-    %    holds(contains(P,X2, D, C), I),
-    %    X1 != X2,
-    %    I != 0.
-        
         
     % Update the history if person P contains vaccine X at step I
     %history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
 
     holds(contains(P,X,D,C),I) :- history(contains(P,X,D,C),I).
 
-    
-    
     occurs(give(P,X),I-1) :- history(contains(P,X,D,C),I), I!=0.
     
     occurs(give(P,X),I) :- history(contains(P, X, D, C),  I+1).
@@ -188,19 +163,12 @@ rules
         dose_set(prpomp,N),
         (D+1) = N.
         
-
-    
-
     holds(contains(P, prpomp, D+1, incomplete), I+1):-
         holds(contains(P, prpomp, D, C), I),
         occurs(give(P, prpomp), I),
         dose_set(prpomp,N),
         (D+1) < N.
         
-
-
-
-
     %%%%%%%%%%%%%%%%%%%% Special case %%%%%%%%%%%%%%%%%%%%
     holds(contains(P, hboc, D+1, incomplete), I+1):-
         holds(contains(P,X1, D, C), I),
@@ -210,17 +178,11 @@ rules
         dose_set(hboc,N),
         (D+1) < N.
     
-    
-    
     holds(contains(P, hboc, D+1, incomplete), I+1):-
         holds(contains(P,prpomp, D, C), I),
         occurs(give(P, hboc),I),
         dose_set(hboc,N),
         (D+1) < N.
-        
-   
-    
-        
 
      % If something occurs, that means something happens
     happens(I) :- occurs(A,I).
@@ -309,21 +271,17 @@ rules
     holds(contains(hanayo,prpomp,2,incomplete),1).
     inital_state(contains(hanayo,prpomp,2,incomplete),1).
     
-   
-   
     % Test case 3 (mixed vaccines) (NOTE PRINTS OUT EXTRA HBOC NODE)
     %history(contains(hanayo, prpomp, 1, incomplete),  0).
     %history(contains(hanayo, hboc, 2, incomplete),  1).
     %holds(contains(hanayo,hboc,2,incomplete),1).
     %inital_state(contains(hanayo,hboc,2,incomplete),1).
 
-    
      % Test case 4 (special scheduling)  
     %history(contains(hanayo, prpomp, 1, incomplete),  0).
     %history(contains(hanayo, hboc, 2, incomplete),  1).
     %holds(contains(hanayo,hboc,2,incomplete),1).
     %inital_state(contains(hanayo,hboc,2,incomplete),1).
-    
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
@@ -334,4 +292,3 @@ display
     %holds(X2,Y2).
     remaining_doses(X3).
     %remain_dose(W3,X3, Y3, Z3).
-    %recent_dose(X3, Y3, Z3).
