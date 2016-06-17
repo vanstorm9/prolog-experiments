@@ -281,11 +281,12 @@ rules
     -holds(contains(kotori,V,D,C),I).
     -holds(contains(nico,V,D,C),I).
 
-    %%% INSTRUCTIONS FOR INPUT %%%
+    %%%%%%%%%%%% INSTRUCTIONS FOR INPUT %%%%%%%%%%%%
     % history(C(_,_,1,_),0)
     % history(C(_,_,2,_),1)
     %   holds(C(_,_,2,_),1)
     %inital_state(C(_,_,2,_),1)
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Test case 0
     %holds(contains(hanayo,prpomp,1,incomplete),0).
@@ -303,7 +304,6 @@ rules
 
 
     % Test case 2 (NOTE, PRINTS OUT AN EXTRA NODE) (AND NODE NOT INITAL)
-    % Incorrect: prpomp 0 and hboc appeared (case 3)
     history(contains(hanayo, prpomp, 1, incomplete),  0).
     history(contains(hanayo, prpomp, 2, incomplete),  1).
     holds(contains(hanayo,prpomp,2,incomplete),1).
