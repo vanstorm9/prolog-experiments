@@ -19,6 +19,21 @@
 % - Implement weight heuristics
 
 
+% How to read and debug output
+
+% How to check if we are correct: 
+
+% We want to make sure HOLDS is consistant with our output
+% We check OCCURS to check that a good path is being suggested
+% We checkk REMAIN_DOSE to make sure the remain_dose feature is working properly
+
+
+% How to debug if there is a problem
+
+% We use HISTORY to see if the history is being recoreded properly
+
+
+
 
 % Set the const n value to a lower number so that paths with unnecessary actions 
 % will not be printed oout
@@ -89,11 +104,15 @@ rules
         
         
     % Update the history if person P contains vaccine X at step I
-    %history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
+    history(contains(P, X, D, C),  I) :- holds(contains(P,X,D,C),I).
 
-    %holds(contains(P,X,D,C),0) :- history(contains(P,X,D,C),0).
+    holds(contains(P,X,D,C),I) :- history(contains(P,X,D,C),I).
 
-    %history(contains(P, X, D, C),  I) :- occurs(give(P,X),I).
+    
+    
+    occurs(give(P,X),I-1) :- history(contains(P,X,D,C),I), I!=0.
+    
+    occurs(give(P,X),I) :- history(contains(P, X, D, C),  I+1).
         
 
     % No need for an inertia axiom, we do not want things to stay the same in the next step
@@ -195,28 +214,32 @@ rules
     goal(I):- holds(contains(hanayo,V,D,complete),I).
        
     %%%%%% Inital State %%%%%%
+    -holds(contains(honoka,V,D,C),I).
+    -holds(contains(nozomi,V,D,C),I).
 
     % We are ignoring the sea, cat, honk, moo, tomato, bird, Nico-chan and Elichika for now
     -holds(contains(umi,V,D,C),I).
     -holds(contains(eli,V,D,C),I).
     -holds(contains(rin,V,D,C),I).
-    -holds(contains(honoka,V,D,C),I).
-    -holds(contains(nozomi,V,D,C),I).
     -holds(contains(maki,V,D,C),I).
     -holds(contains(kotori,V,D,C),I).
     -holds(contains(nico,V,D,C),I).
 
-
+    % Test case 0
+    %holds(contains(hanayo,prpomp,0,incomplete),0).
+    holds(contains(hanayo,hboc,0,incomplete),0).
     
-     % Koizumi Hanayo is our patient for this program
-    
-    % Test case 1 (all 4 hboc)
+    % Test case 1
     %history(contains(hanayo, hboc, 0, incomplete),  0).
     %history(contains(hanayo, hboc, 1, incomplete),  1).
     %holds(contains(hanayo,hboc,1,incomplete),1).
-    
+
+
     % Test case 2 (all 3 prpomp)
-    %holds(contains(hanayo,prpomp,0,incomplete),0).
+    % Incorrect: prpomp 0 and hboc appeared (case 3)
+    %history(contains(hanayo, prpomp, 0, incomplete),  0).
+    %history(contains(hanayo, prpomp, 1, incomplete),  1).  % This mean occurrs prpomp happened at step 0
+    %holds(contains(hanayo,prpomp,1,incomplete),1).
     
     
     % Test case 3 (mixed vaccines)
@@ -226,7 +249,7 @@ rules
    
 
     % Test case 4 (mixed vaccines)
-    holds(contains(hanayo, hboc, 0, incomplete),  0).
+    %holds(contains(hanayo, hboc, 0, incomplete),  0).
  
     
      % Test case 5 (special scheduling)  (PASSED)
@@ -240,6 +263,6 @@ display
     %mixed_case(P,T).
     %history(X0,Y0).
     occurs(X1,Y1).
-    holds(X2,Y2).
-    remain_dose(W3,X3, Y3, Z3).
+    %holds(X2,Y2).
+    %remain_dose(W3,X3, Y3, Z3).
     %recent_dose(X3, Y3, Z3).

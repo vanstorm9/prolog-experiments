@@ -5,7 +5,7 @@ A good online Prolog interpreter to try out:
 http://pengines.swi-prolog.org/apps/swish/index.html
 
 A sparc interpreter to  use:
-http://wave.ttu.edu/onlineSPARC/
+http://wave.ttu.edu/
 
 Some sample sparc scripts:
 http://pages.suddenlink.net/ykahl/
