@@ -62,7 +62,7 @@ predicates
     remain_dose(#rem_num,#person, #vaccine, #step).
     
     occurs(#action, #step).
-    assign(#action, #step).
+    path(#action, #step).
     
     
     holds(#fluent, #step).
@@ -95,13 +95,13 @@ rules
         
     
     % Used to help us position ourselves in certain state
-    assign(give(P,X), I):-
+    path(give(P,X), I):-
         occurs(give(P,X),I),
-        not -assign(give(P,X),I).
+        not -path(give(P,X),I).
         
-    -assign(give(P,X),I1):- 
-        history(contains(P,X,D,C),I2),
-        I1 = I2.
+    %-path(give(P,X),I1):- 
+    %    history(contains(P,X,D,C),I2),
+    %    I1 = I2.
     
         
     
@@ -161,8 +161,9 @@ rules
     holds(contains(P, prpomp, D+1, complete), I+1):-
         holds(contains(P, prpomp, D, C), I),
         occurs(give(P, prpomp), I),
+        -holds(contains(P,hboc,D,C),0),
         dose_set(prpomp,N),
-        (D+1) >= N.
+        (D+1) = N.
         
     
 
@@ -172,6 +173,8 @@ rules
         dose_set(prpomp,N),
         (D+1) < N.
         
+
+
 
 
     %%%%%%%%%%%%%%%%%%%% Special case %%%%%%%%%%%%%%%%%%%%
@@ -254,6 +257,11 @@ rules
     -holds(contains(kotori,V,D,C),I).
     -holds(contains(nico,V,D,C),I).
 
+    %%% INSTRUCTIONS FOR INPUT %%%
+    % history(C(_,_,1,_),0)
+    % history(C(_,_,2,_),1)
+    %   holds(C(_,_,2,_),1)
+
     % Test case 0
     holds(contains(hanayo,prpomp,1,incomplete),0).
     %holds(contains(hanayo,hboc,1,incomplete),0).
@@ -264,34 +272,32 @@ rules
     %holds(contains(hanayo,hboc,2,incomplete),1).
 
 
-    % Test case 2 (all 3 prpomp)
+    % Test case 2 (NOTE, PRINTS OUT AN EXTRA NODE) (AND NODE NOT INITAL)
     % Incorrect: prpomp 0 and hboc appeared (case 3)
-    history(contains(hanayo, prpomp, 1, incomplete),  0).
-    history(contains(hanayo, prpomp, 2, incomplete),  1).
-    holds(contains(hanayo,prpomp,2,incomplete),1).
+    %history(contains(hanayo, prpomp, 1, incomplete),  0).
+    %history(contains(hanayo, prpomp, 2, incomplete),  1).
+    %holds(contains(hanayo,prpomp,2,incomplete),1).
     
-    
-    % Test case 3 (mixed vaccines)
-    %history(contains(hanayo, hboc, 0, incomplete),  0).
-    %history(contains(hanayo, prpomp, 1, incomplete),  1).
-    %holds(contains(hanayo,prpomp,1,incomplete),1).
    
-
-    % Test case 4 (mixed vaccines)
-    %holds(contains(hanayo, hboc, 0, incomplete),  0).
- 
+   
+    % Test case 3 (mixed vaccines) (NOTE PRINTS OUT EXTRA HBOC NODE)
+    %history(contains(hanayo, prpomp, 1, incomplete),  0).
+    %history(contains(hanayo, hboc, 2, incomplete),  1).
+    %holds(contains(hanayo,hboc,2,incomplete),1).
     
-     % Test case 5 (special scheduling)  (PASSED)
-    %history(contains(hanayo, prpomp, 0, incomplete),  0).
-    %history(contains(hanayo, hboc, 1, incomplete),  1).
-    %holds(contains(hanayo,hboc,1,incomplete),1).
+
+    
+     % Test case 4 (special scheduling)  
+    %history(contains(hanayo, prpomp, 1, incomplete),  0).
+    %history(contains(hanayo, hboc, 2, incomplete),  1).
+    %holds(contains(hanayo,hboc,2,incomplete),1).
 
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
     %mixed_case(P,T).
     %history(X0,Y0).
-    assign(XX1, YY1).
+    path(XX1, YY1).
     %occurs(X1,Y1).
     %holds(X2,Y2).
     %remain_dose(W3,X3, Y3, Z3).
