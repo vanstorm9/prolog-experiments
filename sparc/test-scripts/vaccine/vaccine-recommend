@@ -51,6 +51,7 @@ sorts
     #completed = {complete, incomplete}.
     #bool = {true, false}.
     #fluent = contains(#person, #vaccine, #cur_dose, #completed).
+    #fluent_inital = contains(#person, #vaccine, #cur_dose, #completed).
     #action = give(#person, #vaccine).
     
 predicates
@@ -64,9 +65,14 @@ predicates
     occurs(#action, #step).
     path(#action, #step).
     
+    next_vaccine(#vaccine).
     
     holds(#fluent, #step).
     recent_dose(#person, #vaccine, #step).
+    
+    inital_state(#fluent_inital, #step).
+    
+    remaining_doses(#dose_num).
     
     mixed_case(#person, #bool).
     
@@ -81,11 +87,23 @@ rules
     dose_set(hboc,4).
     dose_set(prpomp,3).
 
+    
+    
+    
+
     % Remaining dose is max_dose - current dose (Z-D) at step I
     remain_dose(Z-D, P, V, I):-
         holds(contains(P,V,D,C), I),
         dose_set(V,Z),
         not -remain_dose(Z-D, P, V,I).
+        
+        
+    remaining_doses(Y):- 
+        inital_state(contains(P, V, D, C),II),
+        remain_dose(Y, P, V, II).
+        
+  
+    
         
     % Prevents already completed states from being printed out
     -remain_dose(Z-D, P, V,I):-
@@ -103,7 +121,12 @@ rules
     %    history(contains(P,X,D,C),I2),
     %    I1 = I2.
     
-        
+    
+    
+    next_vaccine(hboc) :- path(give(P,hboc),0).
+    next_vaccine(prpomp) :- path(give(P,prpomp),0).
+    
+    
     
         
     %mixed_case(P,true):- 
@@ -165,6 +188,7 @@ rules
         dose_set(prpomp,N),
         (D+1) = N.
         
+
     
 
     holds(contains(P, prpomp, D+1, incomplete), I+1):-
@@ -261,22 +285,29 @@ rules
     % history(C(_,_,1,_),0)
     % history(C(_,_,2,_),1)
     %   holds(C(_,_,2,_),1)
+    %inital_state(C(_,_,2,_),1)
 
     % Test case 0
-    holds(contains(hanayo,prpomp,1,incomplete),0).
+    %holds(contains(hanayo,prpomp,1,incomplete),0).
+    %inital_state(contains(hanayo,prpomp,1,incomplete),0).
+    
+    % Test case 00
     %holds(contains(hanayo,hboc,1,incomplete),0).
+    %inital_state(contains(hanayo,hboc,1,incomplete),0).
     
     % Test case 1
     %history(contains(hanayo, hboc, 1, incomplete),  0).
     %history(contains(hanayo, hboc, 2, incomplete),  1).
     %holds(contains(hanayo,hboc,2,incomplete),1).
+    %inital_state(contains(hanayo,hboc,2,incomplete),1).
 
 
     % Test case 2 (NOTE, PRINTS OUT AN EXTRA NODE) (AND NODE NOT INITAL)
     % Incorrect: prpomp 0 and hboc appeared (case 3)
-    %history(contains(hanayo, prpomp, 1, incomplete),  0).
-    %history(contains(hanayo, prpomp, 2, incomplete),  1).
-    %holds(contains(hanayo,prpomp,2,incomplete),1).
+    history(contains(hanayo, prpomp, 1, incomplete),  0).
+    history(contains(hanayo, prpomp, 2, incomplete),  1).
+    holds(contains(hanayo,prpomp,2,incomplete),1).
+    inital_state(contains(hanayo,prpomp,2,incomplete),1).
     
    
    
@@ -284,21 +315,23 @@ rules
     %history(contains(hanayo, prpomp, 1, incomplete),  0).
     %history(contains(hanayo, hboc, 2, incomplete),  1).
     %holds(contains(hanayo,hboc,2,incomplete),1).
-    
+    %inital_state(contains(hanayo,hboc,2,incomplete),1).
 
     
      % Test case 4 (special scheduling)  
     %history(contains(hanayo, prpomp, 1, incomplete),  0).
     %history(contains(hanayo, hboc, 2, incomplete),  1).
     %holds(contains(hanayo,hboc,2,incomplete),1).
-
+    %inital_state(contains(hanayo,hboc,2,incomplete),1).
+    
     
 % Allows us to display the planned path in terms of occurs and holds.
 display
-    %mixed_case(P,T).
     %history(X0,Y0).
     path(XX1, YY1).
+    next_vaccine(ZZ1).
     %occurs(X1,Y1).
     %holds(X2,Y2).
+    remaining_doses(X3).
     %remain_dose(W3,X3, Y3, Z3).
     %recent_dose(X3, Y3, Z3).
