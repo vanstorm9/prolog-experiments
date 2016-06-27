@@ -200,6 +200,12 @@ rules
     :- holds(contains(P,X1,D1,C1),I),
         holds(contains(P,X2,D2,C2),I),
         D1 != D2.
+    
+    
+    % Piece of code to help get rid of the need to declare both hold and inital state
+    holds(contains(P,X,I2,C),I1):-
+        inital_state(contains(P,X,I2,C),I1).
+        
         
         
     % an action will not occur for a patient without a selected plan
@@ -251,36 +257,30 @@ rules
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Test case 0
-    %holds(contains(hanayo,prpomp,1,incomplete),0).
     %inital_state(contains(hanayo,prpomp,1,incomplete),0).
     
     % Test case 00
-    %holds(contains(hanayo,hboc,1,incomplete),0).
     %inital_state(contains(hanayo,hboc,1,incomplete),0).
     
     % Test case 1
     %history(contains(hanayo, hboc, 1, incomplete),  0).
     %history(contains(hanayo, hboc, 2, incomplete),  1).
-    %holds(contains(hanayo,hboc,2,incomplete),1).
     %inital_state(contains(hanayo,hboc,2,incomplete),1).
 
 
     % Test case 2 (NOTE, PRINTS OUT AN EXTRA NODE) (AND NODE NOT INITAL)
     history(contains(hanayo, prpomp, 1, incomplete),  0).
     history(contains(hanayo, prpomp, 2, incomplete),  1).
-    holds(contains(hanayo,prpomp,2,incomplete),1).
     inital_state(contains(hanayo,prpomp,2,incomplete),1).
     
     % Test case 3 (mixed vaccines) (NOTE PRINTS OUT EXTRA HBOC NODE)
     %history(contains(hanayo, prpomp, 1, incomplete),  0).
     %history(contains(hanayo, hboc, 2, incomplete),  1).
-    %holds(contains(hanayo,hboc,2,incomplete),1).
     %inital_state(contains(hanayo,hboc,2,incomplete),1).
 
      % Test case 4 (special scheduling)  
     %history(contains(hanayo, prpomp, 1, incomplete),  0).
     %history(contains(hanayo, hboc, 2, incomplete),  1).
-    %holds(contains(hanayo,hboc,2,incomplete),1).
     %inital_state(contains(hanayo,hboc,2,incomplete),1).
     
 % Allows us to display the planned path in terms of occurs and holds.
