@@ -50,5 +50,44 @@ rules
         -holds(prot(b),I).
         
         
+        
+    % State constraints
+    
+    %% active(r) if closed(s1), -ab(r)
+    holds(active(r),I):-
+        holds(closed(s1),I),
+        -holds(ab(r),I).
+        
+    %% closed(s2) if active(r)
+    holds(closed(s2),I):-
+        holds(active(r),I).
+        
+    %% on(b) if closed(s2), -ab(b)
+    holds(on(b), I):- 
+        holds(closed(s2),I),
+        -holds(ab(b),I).
+        
+    
+    %% Executability conditions:
+    %% impossible close(s1) if closed(s1)
+    :- occurs(close(s1),I), holds(closed(s1),I).
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        
+        
 
     
