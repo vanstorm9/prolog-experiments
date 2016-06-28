@@ -1,0 +1,54 @@
+#const n = 1.
+
+sorts
+    #step = 0 .. n.
+    #bulb = {b}.
+    #relay = {r}.
+    #switch = [s][1..2].
+    #comp = #bulb + #relay.
+    
+    #agent_switch = {s1}.
+    
+    #internal_fluent = prot(#bulb) + 
+                        closed(#switch) +
+                        ab(#comp).
+    #defined_fluent = active(#relay) + on(#bulb).
+
+    #fluent = #internal_fluent + #defined_fluent.
+
+    #exogenous_action = {break, surge}.
+    #agent_action = close(#agent_switch).
+    #action = #agent_action + #exogenous_action.
+    
+    #boolean = {true, false}.
+predicates
+    holds(#fluent, #step).
+    occurs(#action, #step).
+    obs(#fluent, #boolean, #step).
+    hpd(#action,#step).
+    expl(#action, #step).
+
+rules
+
+    % The switch will be closed if we close the switch.
+    % close(s1) causes closed(s1)
+    holds(closed(s1),I+1):-
+        occurs(close(s1),I). 
+        
+    
+    %% break causes ab(b)
+    holds(ab(b),I+1):-
+        occurs(break,I).
+        
+    %% surge causes ab(r)
+    holds(ab(r), I+1):-
+        occurs(surge,I).
+        
+    %% surge causes ab(b) if -prot(b)
+    holds(ab(b),I+1):-
+        occurs(surge,I),
+        -holds(prot(b),I).
+        
+        
+
+    

@@ -202,7 +202,7 @@ rules
         D1 != D2.
     
     
-    % Piece of code to help get rid of the need to declare both hold and inital state
+    % If we have this inital state setup at step I1, then we hold this state setup at step I1
     holds(contains(P,X,I2,C),I1):-
         inital_state(contains(P,X,I2,C),I1).
         
